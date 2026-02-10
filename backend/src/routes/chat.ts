@@ -1,17 +1,17 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { streamText } from 'ai';
+import { streamText, ModelMessage } from 'ai';
 import { getPortfolio } from '../lib/portfolio.js';
 import { UBOT_PERSONA, RESPONSE_GUIDELINES } from '../lib/prompts.js';
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', async (req: Request, res: Response) => {
     console.log('\n🤖 UBOT: New chat request received');
 
     try {
         // 1. Get the user's messages
-        const { messages } = req.body;
+        const { messages }: { messages: ModelMessage[] } = req.body;
 
         if (!messages || !Array.isArray(messages)) {
             return res.status(400).json({
@@ -47,7 +47,7 @@ Remember: You are speaking AS the developer. Use "I" when referring to their wor
             system: systemPrompt,
             messages: messages,
             temperature: 0.7,
-            maxTokens: 500,
+            maxOutputTokens: 500,
         });
 
         // 5. Set up streaming response
@@ -63,7 +63,7 @@ Remember: You are speaking AS the developer. Use "I" when referring to their wor
                 chunkCount++;
                 res.write(chunk);
             }
-        } catch (streamError) {
+        } catch (streamError: any) {
             console.error('❌ Stream processing error:', streamError);
             res.write(`\n[Error during generation: ${streamError.message}]`);
         }
@@ -76,7 +76,7 @@ Remember: You are speaking AS the developer. Use "I" when referring to their wor
         console.log(`✅ Response sent successfully (${chunkCount} chunks)`);
         res.end();
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('❌ Chat error:', error.message);
 
         // Send error response

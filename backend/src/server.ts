@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import chatRouter from './routes/chat.js';
@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 // Request logging
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     console.log(`${req.method} ${req.path}`);
     next();
 });
@@ -31,7 +31,7 @@ app.use('/api/chat', chatRouter);
 app.use('/api/admin/portfolio', adminRouter);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
     res.json({
         status: 'healthy',
         service: 'UBOT API',
@@ -40,12 +40,12 @@ app.get('/health', (req, res) => {
 });
 
 // 404 handler
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
     res.status(404).json({ error: 'Endpoint not found' });
 });
 
 // Error handler
-app.use((err, req, res, next) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error('Server error:', err);
     res.status(500).json({
         error: 'Internal server error',
