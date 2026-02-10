@@ -1,0 +1,18 @@
+{
+    "name": "Trishit Swarnakar",
+    "role": "Full Stack Developer",
+    "bio": "Passionate developer with 1 year of experience building scalable web applications.",
+    "email": "trishitofficial@gmail.com",
+    "github": "https://github.com/trishix",
+    "linkedin": "https://linkedin.com/in/trishitswarnakar",
+    "location": "Delhi, India",
+    "availability": "Open to opportunities",
+    "skills": [
+        "JavaScript",
+        "React",
+        "Node.js",
+        "Express",
+        "MongoDB",
+        "Python"
+    ]
+}
