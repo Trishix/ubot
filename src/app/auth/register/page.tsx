@@ -24,9 +24,9 @@ export default function RegisterPage() {
                 },
             });
             if (error) throw error;
-        } catch (err: any) {
+        } catch (err) {
             console.error("Google login error:", err);
-            setError(err.message || "Failed to initialize Google login");
+            setError(err instanceof Error ? err.message : "Failed to initialize Google login");
         }
     };
 

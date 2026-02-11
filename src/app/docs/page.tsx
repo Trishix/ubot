@@ -1,8 +1,7 @@
 "use client";
 
-import { Terminal as TerminalIcon, Code, BookOpen, Send, Shield, Zap, Copy, Check } from "lucide-react";
+import { BookOpen, Zap, Copy, Check } from "lucide-react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function DocumentationPage() {
     const [copiedPayload, setCopiedPayload] = useState(false);
@@ -150,8 +149,8 @@ export default function DocumentationPage() {
                                 <div className="relative">
                                     <code className="block p-6 bg-black border border-white/10 text-xs text-white break-all leading-loose font-bold">
                                         curl -X POST https://ubot.ai/api/chat/your_username \<br />
-                                        -H "Content-Type: application/json" \<br />
-                                        -d &#123;"messages": [&#123;"role": "user", "content": "Hello"&#125;]&#125;
+                                        -H &quot;Content-Type: application/json&quot; \<br />
+                                        -d &#123;&quot;messages&quot;: [&#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello&quot;&#125;]&#125;
                                     </code>
                                 </div>
                             </div>

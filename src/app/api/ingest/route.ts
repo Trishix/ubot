@@ -13,9 +13,21 @@ export async function POST(req: Request) {
         const formData = await req.formData();
         const githubUrl = formData.get("github") as string;
         const username = formData.get("username") as string;
+        const userId = formData.get("userId") as string; // Add userId to associate with account
 
-        if (!githubUrl || !username) {
-            return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+        if (!githubUrl || !username || !userId) {
+            return NextResponse.json({ error: "Missing fields. Ensure you are logged in." }, { status: 400 });
+        }
+
+        // 1. Check if username is already taken by another user
+        const { data: existingUser } = await supabaseAdmin
+            .from("profiles")
+            .select("user_id")
+            .eq("username", username)
+            .single();
+
+        if (existingUser && existingUser.user_id !== userId) {
+            return NextResponse.json({ error: "This username handle is already taken. Please choose another." }, { status: 400 });
         }
 
         const githubUsername = githubUrl.split("/").filter(Boolean).pop();
@@ -86,9 +98,12 @@ export async function POST(req: Request) {
         const { error } = await supabaseAdmin
             .from("profiles")
             .upsert({
+                user_id: userId, // Associate with user account
                 username,
                 portfolio_data: portfolioJson,
                 updated_at: new Date().toISOString()
+            }, {
+                onConflict: 'user_id' // Ensure only one chatbot per account
             });
 
         if (error) throw error;

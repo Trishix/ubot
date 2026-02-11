@@ -30,7 +30,7 @@ export default function ContactPage() {
             } else {
                 setStatus("error");
             }
-        } catch (error) {
+        } catch {
             setStatus("error");
         }
     };
@@ -52,7 +52,7 @@ export default function ContactPage() {
                         Establish <span className="text-primary">Contact</span>
                     </h1>
                     <p className="text-white/90 text-sm md:text-base max-w-2xl leading-relaxed uppercase">
-                        Our support team is here to help with any questions or feedback. We'll get back to you within 24-48 hours.
+                        Our support team is here to help with any questions or feedback. We&apos;ll get back to you within 24-48 hours.
                     </p>
                 </div>
 
@@ -98,7 +98,7 @@ export default function ContactPage() {
                                     <div className="space-y-2">
                                         <h3 className="text-xl font-black text-white uppercase italic">Message Sent</h3>
                                         <p className="text-[11px] text-white/80 uppercase tracking-widest leading-relaxed font-black">
-                                            We've received your message and will respond as soon as possible.
+                                            We&apos;ve received your message and will respond as soon as possible.
                                         </p>
                                     </div>
                                     <button
@@ -163,7 +163,7 @@ export default function ContactPage() {
                                             required
                                             rows={6}
                                             className="w-full bg-white/[0.02] border border-white/10 p-5 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-mono resize-none placeholder:text-white/20"
-                                            placeholder="Tell us what's on your mind..."
+                                            placeholder="Tell us what&apos;s on your mind..."
                                             value={formData.message}
                                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                         />

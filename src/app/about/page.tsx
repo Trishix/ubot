@@ -1,7 +1,6 @@
 "use client";
 
-import { Github, Linkedin, ExternalLink, Cpu, Terminal as TerminalIcon, ShieldCheck } from "lucide-react";
-import { motion } from "framer-motion";
+import { Github, Linkedin, ExternalLink, Cpu, ShieldCheck } from "lucide-react";
 
 export default function AboutPage() {
     return (

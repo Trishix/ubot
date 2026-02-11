@@ -21,7 +21,7 @@ interface ContactEmailData {
  * Sends a contact form submission email to the support team
  */
 export async function sendContactEmail(data: ContactEmailData) {
-    const { name, email, subject, message } = data;
+    const { email, subject } = data;
 
     try {
         const result = await resend.emails.send({

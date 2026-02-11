@@ -48,14 +48,25 @@ export function rotateKey() {
 /**
  * Check if error is a rate limit or quota error
  */
-function isQuotaError(error: any): boolean {
+/**
+ * Check if error is a rate limit or quota error
+ */
+function isQuotaError(error: unknown): boolean {
     if (!error) return false;
 
     const errorString = JSON.stringify(error).toLowerCase();
-    const message = error.message?.toLowerCase() || '';
+
+    // Type guard for objects with message/status
+    const hasMessage = (e: unknown): e is { message: string } =>
+        typeof e === 'object' && e !== null && 'message' in e;
+
+    const hasStatus = (e: unknown): e is { status: number } =>
+        typeof e === 'object' && e !== null && 'status' in e;
+
+    const message = hasMessage(error) ? error.message.toLowerCase() : '';
 
     // Check for standard HTTP 429 status
-    if (error.status === 429 || error.statusCode === 429) return true;
+    if (hasStatus(error) && error.status === 429) return true;
 
     // Common strings in Google AI quota errors
     return (
@@ -73,17 +84,18 @@ function isQuotaError(error: any): boolean {
 /**
  * Execute an AI task with automatic key rotation on rate limits
  */
-export async function withRetry(fn: (client: ReturnType<typeof createGoogleGenerativeAI>) => Promise<any>) {
+export async function withRetry<T>(fn: (client: ReturnType<typeof createGoogleGenerativeAI>) => Promise<T>): Promise<T> {
     const maxAttempts = keys.length;
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
             const client = getGoogleClient();
             return await fn(client);
-        } catch (error: any) {
+        } catch (error: unknown) {
             lastError = error;
-            console.error(`❌ API Key ${currentKeyIndex} failed:`, error.message || error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error(`❌ API Key ${currentKeyIndex} failed:`, errorMessage);
 
             if (isQuotaError(error) && attempt < maxAttempts - 1) {
                 rotateKey();
@@ -96,5 +108,5 @@ export async function withRetry(fn: (client: ReturnType<typeof createGoogleGener
         }
     }
 
-    throw new Error(`All ${maxAttempts} API keys exhausted. Last error: ${lastError?.message || 'Unknown error'}`);
+    throw new Error(`All ${maxAttempts} API keys exhausted. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
 }

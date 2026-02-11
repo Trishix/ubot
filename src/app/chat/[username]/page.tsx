@@ -7,9 +7,15 @@ import { Terminal, Send, Github, Activity, User, Bot as BotIcon, HardDrive, Copy
 import { supabase } from "@/lib/supabase";
 import { AnimatePresence, motion } from "framer-motion";
 
+interface Profile {
+    name?: string;
+    github?: string;
+    [key: string]: unknown;
+}
+
 export default function PublicBot() {
     const { username } = useParams();
-    const [profile, setProfile] = useState<any>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     // Fetch profile data for the header
@@ -69,7 +75,7 @@ export default function PublicBot() {
                     <div className="flex items-center gap-2">
                         <BotIcon className="w-4 h-4 text-primary" />
                         <h1 className="text-[10px] font-black text-white uppercase tracking-widest">
-                            {profile?.name || username} // AI Representative
+                            {profile?.name || username}
                         </h1>
                     </div>
                     <div className="h-4 w-[1px] bg-white/5" />

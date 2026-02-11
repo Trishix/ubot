@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Github, Share2, ArrowRight, Cpu, Terminal as TerminalIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   return (
