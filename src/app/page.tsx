@@ -1,9 +1,28 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Terminal } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { Session } from "@supabase/supabase-js";
 
 export default function LandingPage() {
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <main className="relative min-h-screen flex flex-col items-center justify-center bg-black crt-overlay">
 
@@ -20,17 +39,29 @@ export default function LandingPage() {
         </p>
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-          <Link href="/auth/register" className="w-full md:w-auto">
-            <button className="w-full px-8 py-4 border border-primary text-primary font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-primary hover:text-black transition-all group">
-              Get Started Now
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </button>
-          </Link>
-          <Link href="/chat/trishit" className="w-full md:w-auto">
-            <button className="w-full px-8 py-4 border border-white/10 text-white hover:text-primary hover:border-primary/50 font-mono uppercase tracking-widest text-[11px] transition-all">
-              View Live Demo
-            </button>
-          </Link>
+          {session ? (
+            <Link href="/dashboard" className="w-full md:w-auto">
+              <button className="w-full px-8 py-4 border border-primary text-primary font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-primary hover:text-black transition-all group">
+                <Terminal className="w-4 h-4" />
+                Go to Dashboard
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/auth/register" className="w-full md:w-auto">
+                <button className="w-full px-8 py-4 border border-primary text-primary font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-primary hover:text-black transition-all group">
+                  Get Started Now
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </button>
+              </Link>
+              <Link href="/auth/login" className="w-full md:w-auto">
+                <button className="w-full px-8 py-4 border border-white/10 text-white hover:text-primary hover:border-primary/50 font-mono uppercase tracking-widest text-[11px] transition-all">
+                  Login to Account
+                </button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Benefits - Concrete & Direct */}

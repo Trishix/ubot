@@ -33,6 +33,7 @@ export async function POST(req: Request) {
         const githubUsername = githubUrl.split("/").filter(Boolean).pop();
         let githubData = "";
         let profileInfo = "";
+        let githubId = null;
 
         if (githubUsername) {
             try {
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
                 if (userRes.ok) {
                     const profile = await userRes.json();
                     profileInfo = `Name: ${profile.name || profile.login}, Bio: ${profile.bio || ""}, Company: ${profile.company || ""}, Location: ${profile.location || ""}`;
+                    githubId = profile.id;
                 }
 
                 const githubRes = await fetch(`https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=15`, {
@@ -99,6 +101,7 @@ export async function POST(req: Request) {
             .from("profiles")
             .upsert({
                 user_id: userId, // Associate with user account
+                github_id: githubId, // Store GitHub ID for uniqueness check
                 username,
                 portfolio_data: portfolioJson,
                 updated_at: new Date().toISOString()

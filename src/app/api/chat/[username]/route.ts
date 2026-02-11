@@ -7,6 +7,18 @@ const supabaseAdmin = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// CORS Options
+export async function OPTIONS() {
+    return new Response(null, {
+        status: 200,
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+    });
+}
+
 export async function POST(
     req: Request,
     { params }: { params: Promise<{ username: string }> }
@@ -45,14 +57,22 @@ export async function POST(
                 - If asked about things outside your work or profile, pivot back to your expertise.`,
                 messages,
             });
-            return result.toDataStreamResponse();
+
+            const response = result.toDataStreamResponse();
+
+            // Add CORS headers to the stream response
+            response.headers.set("Access-Control-Allow-Origin", "*");
+            response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+            response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+            return response;
         });
 
     } catch (error) {
         console.error("Chat API Error:", error);
         return new Response(
             JSON.stringify({ error: "Service temporarily unavailable. Please try again later." }),
-            { status: 500, headers: { "Content-Type": "application/json" } }
+            { status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
         );
     }
 }

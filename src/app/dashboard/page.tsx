@@ -297,6 +297,31 @@ export default function Dashboard() {
                                     <ExternalLink className="w-4 h-4 text-white/20" />
                                 </div>
                             </div>
+
+                            {/* API Endpoint Section */}
+                            <div className="md:col-span-2 p-8 border border-white/5 bg-white/[0.01] space-y-4">
+                                <div className="flex items-center gap-2 text-primary opacity-50">
+                                    <Terminal className="w-3 h-3" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest">Headless API Endpoint</span>
+                                </div>
+                                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                    <code className="text-white/70 text-[10px] md:text-xs font-mono bg-black/50 p-3 rounded border border-white/10 w-full md:w-auto flex-1 break-all">
+                                        POST {window.location.origin}/api/chat/{profile.username}
+                                    </code>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(`${window.location.origin}/api/chat/${profile.username}`);
+                                            alert("API Endpoint copied!");
+                                        }}
+                                        className="text-primary text-[10px] uppercase font-black hover:underline whitespace-nowrap"
+                                    >
+                                        [ Copy Endpoint ]
+                                    </button>
+                                </div>
+                                <p className="text-[10px] text-white/40 uppercase tracking-wider">
+                                    Integrate your bot into any frontend. Send POST requests with <code>{`{ messages: [] }`}</code> body.
+                                </p>
+                            </div>
                         </div>
                     </motion.div>
                 ) : (
@@ -319,12 +344,15 @@ export default function Dashboard() {
                                 <div className="space-y-4">
                                     <label className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Your Link Handle</label>
                                     <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/80 font-mono text-[11px] uppercase font-black">ubot-chat.vercel.app/at/</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/80 font-mono text-[11px] uppercase font-black pointer-events-none select-none">
+                                            <span className="hidden md:inline">ubot-chat.vercel.app/at/</span>
+                                            <span className="md:hidden">.../at/</span>
+                                        </span>
                                         <input
                                             type="text"
                                             required
                                             placeholder="your-name"
-                                            className={`w-full bg-white/[0.02] border py-5 pl-[110px] pr-4 focus:outline-none transition-all text-white font-mono text-sm ${isUsernameAvailable === true ? 'border-primary/50' :
+                                            className={`w-full bg-white/[0.02] border py-5 pl-[80px] md:pl-[220px] pr-4 focus:outline-none transition-all text-white font-mono text-sm ${isUsernameAvailable === true ? 'border-primary/50' :
                                                 isUsernameAvailable === false ? 'border-red-500/50' :
                                                     'border-white/10'
                                                 }`}
