@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   authors: [{ name: "UBOT Team" }],
   creator: "UBOT Platform",
   publisher: "UBOT Platform",
-  metadataBase: new URL("https://ubot.ai"),
+  metadataBase: new URL("https://ubot-chat.vercel.app"),
   alternates: {
     canonical: "/",
   },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
       template: "%s | UBOT Platform"
     },
     description: "Generate a personalized AI chatbot from your resume and GitHub. The ultimate developer portfolio tool.",
-    url: "https://ubot.ai",
+    url: "https://ubot-chat.vercel.app",
     siteName: "UBOT Platform",
     locale: "en_US",
     type: "website",
@@ -88,10 +88,10 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": "UBOT Platform",
-              "url": "https://ubot.ai",
+              "url": "https://ubot-chat.vercel.app",
               "potentialAction": {
                 "@type": "SearchAction",
-                "target": "https://ubot.ai/search?q={search_term_string}",
+                "target": "https://ubot-chat.vercel.app/search?q={search_term_string}",
                 "query-input": "required name=search_term_string"
               },
               "publisher": {
@@ -99,7 +99,7 @@ export default function RootLayout({
                 "name": "UBOT Platform",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://ubot.ai/logo.png"
+                  "url": "https://ubot-chat.vercel.app/logo.png"
                 }
               }
             })

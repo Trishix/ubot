@@ -10,11 +10,11 @@ export default function LandingPage() {
 
       {/* Hero Content - Instant Visibility */}
       <div className="relative z-10 max-w-4xl px-6 text-center">
-        <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 text-white uppercase italic leading-[1]">
+        <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-6 text-white uppercase italic leading-[1]">
           Turn your <span className="text-primary">GitHub</span> into an AI Chatbot
         </h1>
 
-        <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto font-mono leading-relaxed">
+        <p className="text-base md:text-xl text-white/80 mb-10 max-w-2xl mx-auto font-mono leading-relaxed">
           The professional AI representative for developers.
           Sync your profile and get a shareable link in under 2 minutes.
         </p>
@@ -34,7 +34,7 @@ export default function LandingPage() {
         </div>
 
         {/* Benefits - Concrete & Direct */}
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 border border-white/5 divide-y md:divide-y-0 md:divide-x divide-white/5">
+        <div className="mt-12 md:mt-24 grid grid-cols-1 md:grid-cols-3 border border-white/5 divide-y md:divide-y-0 md:divide-x divide-white/5">
           {[
             {
               title: "Instant Knowledge",
@@ -58,7 +58,7 @@ export default function LandingPage() {
             },
             {
               title: "Personal Handle",
-              desc: "A permanent ubot.ai/at/username link for your professional bio."
+              desc: "A permanent ubot-chat.vercel.app/at/username link for your professional bio."
             },
           ].slice(0, 3).map((benefit, i) => (
             <div key={i} className="p-8 text-left hover:bg-white/[0.02] transition-colors">

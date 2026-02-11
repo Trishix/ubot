@@ -167,7 +167,7 @@ export default function Dashboard() {
     }
 
     return (
-        <main className="min-h-screen bg-black crt-overlay py-20 px-6 relative overflow-hidden font-mono">
+        <main className="min-h-screen bg-black crt-overlay py-10 md:py-20 px-4 md:px-6 relative overflow-hidden font-mono">
             <AnimatePresence>
                 {loading && (
                     <motion.div
@@ -194,7 +194,7 @@ export default function Dashboard() {
                 )}
             </AnimatePresence>
 
-            <div className="max-w-4xl mx-auto flex flex-col gap-16 relative z-10">
+            <div className="max-w-4xl mx-auto flex flex-col gap-8 md:gap-16 relative z-10">
                 {/* Minimal Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/10 pb-12">
                     <div className="space-y-2">
@@ -202,7 +202,7 @@ export default function Dashboard() {
                             <Terminal className="w-4 h-4 text-primary" />
                             <span className="text-[11px] font-black text-primary uppercase tracking-[0.2em]">Dashboard</span>
                         </div>
-                        <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+                        <h1 className="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase italic">
                             {profile ? "Your Chatbot" : "Configure Bot"}
                         </h1>
                         <p className="text-white/90 text-sm uppercase tracking-widest leading-relaxed">
@@ -232,7 +232,7 @@ export default function Dashboard() {
                                 Active System // ONLINE
                             </div>
                             <div
-                                className="border border-primary/30 bg-primary/[0.02] p-12 flex flex-col items-center justify-center gap-8 relative overflow-hidden"
+                                className="border border-primary/30 bg-primary/[0.02] p-6 md:p-12 flex flex-col items-center justify-center gap-8 relative overflow-hidden"
                                 style={{ clipPath: "polygon(0 0, 100% 0, 100% 92%, 98% 100%, 0 100%)" }}
                             >
                                 <div className="text-center space-y-4">
@@ -319,7 +319,7 @@ export default function Dashboard() {
                                 <div className="space-y-4">
                                     <label className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Your Link Handle</label>
                                     <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/80 font-mono text-[11px] uppercase font-black">ubot.ai/at/</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/80 font-mono text-[11px] uppercase font-black">ubot-chat.vercel.app/at/</span>
                                         <input
                                             type="text"
                                             required

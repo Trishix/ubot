@@ -16,7 +16,7 @@ export default function DocumentationPage() {
   ]
 }`;
 
-    const curlCommand = `curl -X POST https://ubot.ai/api/chat/your_username \\
+    const curlCommand = `curl -X POST https://ubot-chat.vercel.app/api/chat/your_username \\
 -H "Content-Type: application/json" \\
 -d '{"messages": [{"role": "user", "content": "Hello"}]}'`;
 
@@ -148,7 +148,7 @@ export default function DocumentationPage() {
                                 </div>
                                 <div className="relative">
                                     <code className="block p-6 bg-black border border-white/10 text-xs text-white break-all leading-loose font-bold">
-                                        curl -X POST https://ubot.ai/api/chat/your_username \<br />
+                                        curl -X POST https://ubot-chat.vercel.app/api/chat/your_username \<br />
                                         -H &quot;Content-Type: application/json&quot; \<br />
                                         -d &#123;&quot;messages&quot;: [&#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello&quot;&#125;]&#125;
                                     </code>

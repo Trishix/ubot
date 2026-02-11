@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/api/', '/dashboard/'],
         },
-        sitemap: 'https://ubot.ai/sitemap.xml',
+        sitemap: 'https://ubot-chat.vercel.app/sitemap.xml',
     }
 }

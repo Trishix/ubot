@@ -70,7 +70,7 @@ export default function PublicBot() {
     return (
         <main className="relative h-screen bg-black flex flex-col crt-overlay font-mono">
             {/* Minimal Terminal Header */}
-            <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black z-30">
+            <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-8 bg-black z-30">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <BotIcon className="w-4 h-4 text-primary" />
@@ -103,7 +103,7 @@ export default function PublicBot() {
             {/* Flat Scrollable Conversation Area */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto px-8 py-10 flex flex-col gap-8 max-w-4xl mx-auto w-full scrollbar-none"
+                className="flex-1 overflow-y-auto px-4 md:px-8 py-10 flex flex-col gap-8 max-w-4xl mx-auto w-full scrollbar-none"
             >
                 <AnimatePresence initial={false}>
                     {messages.map((msg: Message, i: number) => (
@@ -183,7 +183,7 @@ export default function PublicBot() {
             </div>
 
             {/* Input - Minimal & Functional */}
-            <div className="p-8 bg-black z-30">
+            <div className="p-4 md:p-8 bg-black z-30">
                 <div className="max-w-4xl mx-auto">
                     <form onSubmit={handleSubmit} className="relative">
                         <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 text-primary">
@@ -193,7 +193,7 @@ export default function PublicBot() {
                         <input
                             type="text"
                             autoFocus
-                            className="w-full bg-white/[0.02] border border-white/10 py-5 pl-24 pr-16 focus:outline-none focus:border-primary/50 transition-all text-white placeholder:text-white/40 text-sm"
+                            className="w-full bg-white/[0.02] border border-white/10 py-5 pl-24 pr-16 focus:outline-none focus:border-primary/50 transition-all text-white placeholder:text-white/40 text-base md:text-sm"
                             placeholder="Ask a question..."
                             value={input}
                             onChange={handleInputChange}
