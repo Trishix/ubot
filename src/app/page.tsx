@@ -1,0 +1,90 @@
+"use client";
+
+import Link from "next/link";
+import { Github, Share2, ArrowRight, Cpu, Terminal as TerminalIcon } from "lucide-react";
+
+export default function LandingPage() {
+  return (
+    <main className="relative min-h-screen flex flex-col items-center justify-center bg-black crt-overlay">
+
+
+      {/* Hero Content - Instant Visibility */}
+      <div className="relative z-10 max-w-4xl px-6 text-center">
+        <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 text-white uppercase italic leading-[1]">
+          Turn your <span className="text-primary">GitHub</span> into an AI Chatbot
+        </h1>
+
+        <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto font-mono leading-relaxed">
+          The professional AI representative for developers.
+          Sync your profile and get a shareable link in under 2 minutes.
+        </p>
+
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+          <Link href="/auth/register" className="w-full md:w-auto">
+            <button className="w-full px-8 py-4 border border-primary text-primary font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-primary hover:text-black transition-all group">
+              Get Started Now
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </button>
+          </Link>
+          <Link href="/chat/trishit" className="w-full md:w-auto">
+            <button className="w-full px-8 py-4 border border-white/10 text-white hover:text-primary hover:border-primary/50 font-mono uppercase tracking-widest text-[11px] transition-all">
+              View Live Demo
+            </button>
+          </Link>
+        </div>
+
+        {/* Benefits - Concrete & Direct */}
+        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 border border-white/5 divide-y md:divide-y-0 md:divide-x divide-white/5">
+          {[
+            {
+              title: "Instant Knowledge",
+              desc: "Your bot learns directly from your public repositories and contributions."
+            },
+            {
+              title: "Lightning Fast",
+              desc: "Engineered for speed with a minimalist interface and ultra-low latency."
+            },
+            {
+              title: "Personal Handle",
+              desc: "Get a permanent link for your bio that represents your code 24/7."
+            },
+            {
+              title: "Source Sync",
+              desc: "Build knowledge directly from your public repositories and contributions."
+            },
+            {
+              title: "12ms Latency",
+              desc: "Engineered for speed with a minimalist terminal-based conversation interface."
+            },
+            {
+              title: "Personal Handle",
+              desc: "A permanent ubot.ai/at/username link for your professional bio."
+            },
+          ].slice(0, 3).map((benefit, i) => (
+            <div key={i} className="p-8 text-left hover:bg-white/[0.02] transition-colors">
+              <h3 className="text-[10px] font-black tracking-[0.2em] text-primary mb-3 uppercase font-mono">
+                {benefit.title}
+              </h3>
+              <p className="text-white/80 text-xs font-mono leading-relaxed uppercase">
+                {benefit.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Global Status Bar */}
+      <footer className="fixed bottom-0 left-0 right-0 h-10 border-t border-white/5 bg-black flex items-center justify-between px-8 z-50">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-mono text-white uppercase tracking-widest">System Status: Online</span>
+          </div>
+        </div>
+        <div className="text-[10px] font-mono text-white/90 uppercase tracking-widest leading-none">
+          © 2026 UBOT // v1.0.0
+        </div>
+      </footer>
+    </main>
+  );
+}

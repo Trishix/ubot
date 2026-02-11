@@ -1,54 +1,77 @@
-# UBOT - AI-Powered Portfolio Chatbot
+# UBOT Platform
 
-## 🚀 Easy Setup Guide
+UBOT is an AI-powered platform that allows users to create their own "AI Career Twin" - a personalized chatbot that can answer questions based on their professional profile, GitHub activity, and resume.
 
-This project is separated into **Backend** (API) and **Frontend** (Terminal Interface).
+## 🚀 Features
 
-### 1️⃣ Backend Setup (The Brain)
+- **AI Career Twin**: Generate a personalized chatbot trained on your professional data.
+- **GitHub Integration**: Automatically fetch and analyze your GitHub repositories.
+- **Resume Parsing**: Upload your CV to extract skills and experience.
+- **Terminal-Style UI**: A sleek, hacker-themed interface for a unique user experience.
+- **Dual Email System**: Professional contact form with support notifications and user confirmations.
 
-1.  Open the `backend` folder in your terminal:
-    ```bash
-    cd backend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Set up your environment variables:
-    *   Rename `.env.example` to `.env` (or create a new `.env` file).
-    *   Open `.env` and add your **Google Gemini API Key**:
-        ```env
-        GOOGLE_API_KEY=your_actual_api_key_here
-        ```
-4.  Start the server:
-    ```bash
-    npm run dev
-    ```
-    ✅ Server will run at: `http://localhost:3001`
+## 🛠️ Tech Stack
 
----
+- **Framework**: Next.js 16 (App Router)
+- **AI Engine**: Google Gemini 2.5 Flash / Flash-Lite
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Styling**: Tailwind CSS + Custom Terminal Theme
+- **Email**: Resend API
 
-### 2️⃣ Frontend Setup (The Interface)
+## 📚 Documentation
 
-1.  Open a **new terminal** window and go to the `frontend` folder:
-    ```bash
-    cd frontend
-    ```
-2.  Install dependencies (only needed once):
-    ```bash
-    npm install
-    ```
-3.  Start the frontend:
-    ```bash
-    npm run dev
-    ```
-    ✅ It will give you a local URL (e.g., `http://localhost:5173`). Open that in your browser!
+Detailed documentation is available in the `docs/` directory:
 
-### 🌍 Deployment Configuration
+- [**Email Service Guide**](docs/EMAIL_SERVICE.md): Configuration and usage of the dual email system.
+- [**Quick Start Email**](docs/QUICK_START_EMAIL.md): Fast setup guide for email functionality.
+- [**API Quota Guide**](docs/API_QUOTA_GUIDE.md): Managing Google AI API limits and key rotation.
+- [**Build Summary**](docs/BUILD_SUMMARY.md): Changelog and resolution of recent build issues.
 
-*   **Backend**: Set environment variables (`GOOGLE_API_KEY`, etc.) in your hosting provider (Render, Railway, Heroku).
-*   **Frontend**: To point the frontend to a deployed backend, create a `.env` file in the `frontend` folder:
-    ```env
-    VITE_API_URL=https://your-deployed-backend.com/api/chat
-    ```
-    Then run `npm run build` to create static files for deployment.
+## 🚦 Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/ubot.git
+   cd ubot
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**
+   Copy `.env.example` to `.env.local` and fill in your API keys:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Required keys:
+   - Supabase URL & Anon Key
+   - GitHub Token
+   - Google AI API Key(s)
+   - Resend API Key (for emails)
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open locally**
+   Visit [http://localhost:3000](http://localhost:3000)
+
+## 📧 Email Service Setup
+
+The platform uses **Resend** for transactional emails. To enable:
+
+1. Add `RESEND_API_KEY` to `.env.local`
+2. Verify your domain in Resend dashboard (for production)
+3. See [Email Service Guide](docs/EMAIL_SERVICE.md) for full details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License.
