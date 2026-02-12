@@ -121,8 +121,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     try {
         const google = getRandomGoogleProvider();
         const { embedding } = await embed({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            model: google.textEmbeddingModel("text-embedding-004") as any,
+            model: google.textEmbeddingModel("text-embedding-004"),
             value: text,
         });
         return embedding;
@@ -136,8 +135,7 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
     try {
         const google = getRandomGoogleProvider();
         const { embeddings } = await embedMany({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            model: google.textEmbeddingModel("text-embedding-004") as any,
+            model: google.textEmbeddingModel("text-embedding-004"),
             values: texts,
         });
         return embeddings;
