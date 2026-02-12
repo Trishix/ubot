@@ -19,14 +19,22 @@ export async function OPTIONS() {
     });
 }
 
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Force Node.js runtime for local embeddings (transformers.js)
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 export async function POST(
     req: Request,
     { params }: { params: Promise<{ username: string }> }
 ) {
     const { username } = await params;
-    const { messages } = await req.json();
 
     try {
+        const { messages } = await req.json();
+
         // 1. Fetch persona data
         const { data: profile, error: profileError } = await supabaseAdmin
             .from("profiles")
@@ -51,20 +59,21 @@ export async function POST(
                     // Use Xenova local embedding
                     const queryEmbedding = await generateEmbedding(userMessage);
 
-                    const { data: documents } = await supabaseAdmin.rpc("match_documents", {
+                    const { data: documents, error: matchError } = await supabaseAdmin.rpc("match_documents", {
                         query_embedding: queryEmbedding,
                         match_threshold: 0.5, // Adjust threshold as needed
                         match_count: 5,
                         filter_user_id: profile.user_id
                     });
 
-                    if (documents && documents.length > 0) {
+                    if (matchError) {
+                        console.error("RAG Match Error", matchError);
+                    } else if (documents && documents.length > 0) {
                         contextText = documents.map((doc: { content: string }) => doc.content).join("\n\n");
-                        console.log(`RAG: Found ${documents.length} relevant context chunks.`);
                     }
                 }
             } catch (err) {
-                console.error("RAG Retrieval Failed:", err);
+                console.error("RAG Failed", err);
                 // Continue without context if RAG fails
             }
             // --- RAG RETRIEVAL END ---
@@ -89,7 +98,11 @@ export async function POST(
                 messages,
             });
 
-            const response = result.toDataStreamResponse();
+            const response = result.toDataStreamResponse({
+                getErrorMessage: (error) => {
+                    return error instanceof Error ? error.message : String(error);
+                }
+            });
 
             // Add CORS headers to the stream response
             response.headers.set("Access-Control-Allow-Origin", "*");
@@ -102,8 +115,17 @@ export async function POST(
     } catch (error) {
         console.error("Chat API Error:", error);
         return new Response(
-            JSON.stringify({ error: "Service temporarily unavailable. Please try again later." }),
-            { status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
+            JSON.stringify({
+                error: "Service temporarily unavailable.",
+                details: error instanceof Error ? error.message : String(error)
+            }),
+            {
+                status: 500,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
+                }
+            }
         );
     }
 }

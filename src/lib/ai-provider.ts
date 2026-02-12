@@ -28,9 +28,11 @@ export const MODELS = {
 
 export function getGoogleClient() {
     if (keys.length === 0) {
+        console.error("❌ AI Provider: No API keys found in process.env!");
         throw new Error("No Google API keys configured. Please set FREE_API_KEY_1 in .env.local");
     }
     const key = keys[currentKeyIndex];
+    // console.log(`🔑 Using API Key Index: ${currentKeyIndex}`);
     return createGoogleGenerativeAI({
         apiKey: key,
     });
@@ -54,7 +56,8 @@ export function rotateKey() {
 function isQuotaError(error: unknown): boolean {
     if (!error) return false;
 
-    const errorString = JSON.stringify(error).toLowerCase();
+    const errorString = String(error).toLowerCase(); // Better than stringify for Error objects
+    const errorJson = typeof error === 'object' ? JSON.stringify(error).toLowerCase() : '';
 
     // Type guard for objects with message/status
     const hasMessage = (e: unknown): e is { message: string } =>
@@ -68,19 +71,21 @@ function isQuotaError(error: unknown): boolean {
     // Check for standard HTTP 429 status
     if (hasStatus(error) && error.status === 429) return true;
 
-    // Common strings in Google AI quota errors
-    return (
+    // Aggressive checks for any quota-related keywords
+    const isRateLimit = (
         message.includes('429') ||
         message.includes('rate limit') ||
-        message.includes('quota exceeded') ||
+        message.includes('quota') || // Catch "quota exceeded", "quota check failed", etc.
         message.includes('exhausted') ||
         message.includes('too many requests') ||
-        message.includes('resource_exhausted') ||
         errorString.includes('quota') ||
-        errorString.includes('rate_limit') ||
+        errorString.includes('rate limit') ||
         errorString.includes('429') ||
-        errorString.includes('resource_exhausted')
+        errorJson.includes('quota') ||
+        errorJson.includes('resource_exhausted')
     );
+
+    return isRateLimit;
 }
 
 /**

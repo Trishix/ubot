@@ -47,14 +47,22 @@ export default function PublicBot() {
         ],
         onError: (err) => {
             console.error("Chat Error:", err);
-            setMessages(prev => [
-                ...prev,
-                {
-                    id: `err-${Date.now()}`,
-                    role: "system",
-                    content: "Notice: Rate limit reached. Please wait a moment."
-                }
-            ]);
+            const errorMessage = err instanceof Error ? err.message : "Connection failed.";
+
+            // Avoid duplicate error messages
+            setMessages(prev => {
+                const lastMsg = prev[prev.length - 1];
+                if (lastMsg?.role === "system" && lastMsg.content === errorMessage) return prev;
+
+                return [
+                    ...prev,
+                    {
+                        id: `err-${Date.now()}`,
+                        role: "system",
+                        content: `> SYSTEM ALERT: ${errorMessage}`
+                    }
+                ];
+            });
         }
     });
 
