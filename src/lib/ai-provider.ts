@@ -1,63 +1,14 @@
 import { createOpenAI } from "@ai-sdk/openai";
-/*
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-
-const keys = Array.from(new Set([
-    process.env.FREE_API_KEY_1,
-    process.env.FREE_API_KEY_2,
-    process.env.FREE_API_KEY_3,
-    process.env.FREE_API_KEY_4,
-    process.env.GOOGLE_API_KEY
-].filter(Boolean) as string[]));
-
-// Shuffle keys on startup to distribute load across multiple free tier quotas
-if (keys.length > 1) {
-    for (let i = keys.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [keys[i], keys[j]] = [keys[j], keys[i]];
-    }
-}
-
-console.log(`📡 AI Provider: Loaded ${keys.length} unique API keys.`);
-
-let currentKeyIndex = 0;
-
-// Strictly using the requested Gemini 2.5 variants
-export const MODELS = {
-    FLASH: "gemini-2.5-flash",
-    FLASH_LITE: "gemini-2.5-flash-lite"
-} as const;
-
-export function getGoogleClient() {
-    if (keys.length === 0) {
-        console.error("❌ AI Provider: No API keys found in process.env!");
-        throw new Error("No Google API keys configured. Please set FREE_API_KEY_1 in .env.local");
-    }
-    const key = keys[currentKeyIndex];
-    // console.log(`🔑 Using API Key Index: ${currentKeyIndex}`);
-    return createGoogleGenerativeAI({
-        apiKey: key,
-    });
-}
-
-export function rotateKey() {
-    if (keys.length <= 1) return currentKeyIndex;
-
-    const previousIndex = currentKeyIndex;
-    currentKeyIndex = (currentKeyIndex + 1) % keys.length;
-    console.log(`📡 Rotating API Key: Index ${previousIndex} → ${currentKeyIndex}`);
-    return currentKeyIndex;
-}
-*/
 
 // --- OPENROUTER CONFIGURATION ---
+// OpenRouter using OpenAI compatibility
 const openrouter = createOpenAI({
     baseURL: "https://openrouter.ai/api/v1",
     apiKey: process.env.OPENROUTER_API_KEY,
     headers: {
-        "HTTP-Referer": "https://ubot-chat.vercel.app", // Optional: Your site URL
-        "X-Title": "UBOT" // Optional: Your site name
-    }
+        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://ubot-chat.vercel.app", // Optional, for including your app on openrouter.ai rankings.
+        "X-Title": "UBot", // Optional. Shows in rankings on openrouter.ai.
+    },
 });
 
 export const MODELS = {
@@ -66,9 +17,6 @@ export const MODELS = {
 } as const;
 
 
-/**
- * Check if error is a rate limit or quota error
- */
 /**
  * Check if error is a rate limit or quota error
  */
@@ -144,6 +92,7 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
         env.allowLocalModels = false;
         env.useBrowserCache = false;
 
+        // 'Xenova/all-mpnet-base-v2' outputs 768 dimensions
         embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
     }
 
