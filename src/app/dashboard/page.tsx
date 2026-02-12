@@ -414,7 +414,20 @@ export default function Dashboard() {
                                         className="w-full bg-white/[0.02] border border-white/10 py-4 px-4 focus:outline-none focus:border-primary/50 transition-all text-white font-mono text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-[10px] file:font-black file:bg-primary file:text-black hover:file:bg-primary/90"
                                         onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
                                     />
+                                    {profile?.portfolio_data?.resume_text && !resumeFile ? (
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                            <span className="text-[9px] text-green-500 font-black uppercase tracking-widest">
+                                                Resume Data Saved
+                                            </span>
+                                        </div>
+                                    ) : null}
                                 </div>
+                                {profile?.portfolio_data?.resume_text ? (
+                                    <p className="text-[10px] text-white/40 uppercase tracking-widest">
+                                        * A resume is already saved. Uploading a new one will replace it.
+                                    </p>
+                                ) : null}
                             </div>
 
                             <div className="space-y-4">

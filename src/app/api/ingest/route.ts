@@ -165,7 +165,10 @@ export async function POST(req: Request) {
                 user_id: userId,
                 github_id: githubId,
                 username,
-                portfolio_data: portfolioJson,
+                portfolio_data: {
+                    ...portfolioJson,
+                    resume_text: resumeText ? resumeText.slice(0, 5000) : ((existingUser as any)?.portfolio_data?.resume_text || null)
+                },
                 updated_at: new Date().toISOString()
             }, {
                 onConflict: 'user_id'
