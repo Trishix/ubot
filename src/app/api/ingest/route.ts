@@ -3,7 +3,7 @@ import { generateText, embedMany } from "ai";
 import { createClient } from "@supabase/supabase-js";
 import { withRetry, MODELS, getGoogleClient, generateEmbeddings } from "@/lib/ai-provider";
 // @ts-ignore
-const { PDFParse } = require("pdf-parse");
+// pdf-parse is required dynamically inside the handler to avoid Vercel build/init issues
 
 // Increase body size limit for file uploads if needed (Next.js config might be required)
 
@@ -62,6 +62,11 @@ export async function POST(req: Request) {
             try {
                 const arrayBuffer = await resumeFile.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
+
+                // Dynamic import for pdf-parse to prevent cold start crashes
+                // @ts-ignore
+                const { PDFParse } = require("pdf-parse");
+
                 const parser = new PDFParse({ data: buffer });
                 const data = await parser.getText();
                 await parser.destroy();

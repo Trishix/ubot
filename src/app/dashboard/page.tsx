@@ -383,7 +383,7 @@ export default function Dashboard() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-[11px] font-black text-white uppercase tracking-[0.2em]">GitHub Profile URL (Optional)</label>
+
                                     <div className="relative">
                                         <Github className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
                                         <input
