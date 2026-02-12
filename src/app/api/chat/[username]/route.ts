@@ -19,9 +19,6 @@ export async function OPTIONS() {
     });
 }
 
-import * as fs from 'fs';
-import * as path from 'path';
-
 // Force Node.js runtime for local embeddings (transformers.js)
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -61,7 +58,7 @@ export async function POST(
 
                     const { data: documents, error: matchError } = await supabaseAdmin.rpc("match_documents", {
                         query_embedding: queryEmbedding,
-                        match_threshold: 0.5, // Adjust threshold as needed
+                        match_threshold: 0.5, // Standard threshold
                         match_count: 5,
                         filter_user_id: profile.user_id
                     });
@@ -81,20 +78,21 @@ export async function POST(
             const result = await streamText({
                 model: google(MODELS.FLASH_LITE),
                 maxRetries: 0, // Disable internal retries for instant rotation
-                system: `You are ${data.name}, ${data.role}. 
+                system: `You are ${data.name}, ${data.role}.
                 Your biography: ${data.bio}.
                 Your skills: ${data.skills?.join(", ")}.
                 GitHub Profile: ${data.github}.
 
                 RELEVANT CONTEXT FROM YOUR KNOWLEDGE BASE (RESUME/PORTFOLIO):
                 ${contextText ? contextText : "No specific context found for this query."}
-                
+
                 RESPONSE RULES:
                 - Always speak in the FIRST PERSON as ${data.name}.
-                - Maintain a professional, helpful personality adapted to your domain (Tech, Creative, Corporate, etc.).
-                - Keep responses concise and structured.
-                - If asked about things outside your work or profile, pivot back to your expertise.
-                - Use the "RELEVANT CONTEXT" above to answer specific questions about your experience, projects, or resume details.`,
+                - **CRITICAL**: The "RELEVANT CONTEXT" above contains your actual Resume, Portfolio, and background. You MUST use it to answer **ANY** question about your experience, education, projects, skills, contact info, or personal background.
+                - Do NOT be evasive. If the answer is in the context, provide it directly and professionally.
+                - If the information is NOT in the context, strictly say "I don't have that specific information in my knowledge base."
+                - Maintain a professional, helpful personality.
+                - Keep responses concise and structured.`,
                 messages,
             });
 

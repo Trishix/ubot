@@ -33,9 +33,10 @@ export async function POST(req: Request) {
         const username = formData.get("username") as string;
         const userId = formData.get("userId") as string; // Add userId to associate with account
         const resumeFile = formData.get("resume") as File | null;
+        const extraDetails = formData.get("extraDetails") as string;
 
-        if ((!githubUrl && !resumeFile) || !username || !userId) {
-            return NextResponse.json({ error: "Either GitHub URL or Resume is required." }, { status: 400 });
+        if ((!githubUrl && !resumeFile && !extraDetails) || !username || !userId) {
+            return NextResponse.json({ error: "At least one data source (GitHub, Resume, or Extra Details) is required." }, { status: 400 });
         }
 
         // 1. Check if username is already taken by another user
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "This username handle is already taken. Please choose another." }, { status: 400 });
         }
 
-        const githubUsername = githubUrl.split("/").filter(Boolean).pop();
+        const githubUsername = githubUrl ? githubUrl.split("/").filter(Boolean).pop() : null;
         let githubData = "";
         let profileInfo = "";
         let resumeText = "";
@@ -110,28 +111,41 @@ export async function POST(req: Request) {
             }
         }
 
-        if (!githubData && !profileInfo && !resumeText) {
+        if (!githubData && !profileInfo && !resumeText && !extraDetails) {
             throw new Error("Could not retrieve any data from the provided sources.");
         }
 
-        // Generate Structured Persona from GitHub + Resume Summary
+        // Generate Structured Persona from GitHub + Resume Summary + Extra Details
         const structuredData = await withRetry(async (google) => {
             const { text } = await generateText({
                 model: google(MODELS.FLASH),
                 maxRetries: 0,
-                prompt: `Create a professional chatbot persona based on this GitHub profile, repositories, and Resume. 
+                prompt: `Create a professional chatbot persona based on this GitHub profile, repositories, Resume, and Extra Details.
                 Output ONLY a JSON object with keys: name, role, bio, skills (array), github.
-          
+
                 STRICT RULE: Represent the person in the FIRST PERSON ("I am...", "I built...").
-          
+                STRICT RULE: The user's GitHub handle is "${githubUsername || 'provided in resume'}". UDPATE the 'github' field with this handle/URL.
+
+                DATA MERGING & CONFLICT RESOLUTION:
+                0. **Extra Details (Make sure to include)**: This source contains specific user instructions, recent achievements, or manual overrides. It has the **HIGHEST PRIORITY**. Whether it contradicts the Resume or GitHub or extends it, always incorporate this information.
+                1. **Role/Title**: If the Resume and GitHub have different current roles, prioritize the most recent one (look for "Present", "Current", or 2024/2025 dates). If ambiguous, combine them (e.g., "Full Stack Developer & Open Source Contributor").
+                2. **Skills**: Merge skills from all sources.
+                   - Prioritize languages found in **GitHub Repos** as they are "verified" usage.
+                   - Add unique skills from the **Resume** (e.g., Soft Skills, older stacks).
+                3. **Bio**: Create a cohesive narrative. Start with the Resume's professional summary but specifically mention 1-2 key active repositories from GitHub to show current focus. Incorporate any bio info from Extra Details.
+                4. **Latest Info**: Trust the source with the *latest timestamp* or verified employment status.
+
+                EXTRA DETAILS (Direct User Input - HIGHEST PRIORITY):
+                ${extraDetails}
+
                 GITHUB PROFILE:
                 ${profileInfo}
-          
+
                 GITHUB REPOSITORIES:
                 ${githubData}
 
                 RESUME SUMMARY (if any):
-                ${resumeText.slice(0, 2000)}... (truncated for summary)
+                ${resumeText.slice(0, 3000)}... (truncated for summary)
                 `,
             });
             return text;
@@ -141,6 +155,8 @@ export async function POST(req: Request) {
         if (!jsonMatch) throw new Error("Failed to generate profile structure.");
 
         const portfolioJson = JSON.parse(jsonMatch[0]);
+
+
 
         // Upsert Profile
         const { error: profileError } = await supabaseAdmin
@@ -161,40 +177,48 @@ export async function POST(req: Request) {
         // Clear existing documents for this user before adding new ones (full re-index strategy)
         await supabaseAdmin.from("documents").delete().eq("user_id", userId);
 
-        const documentsToEmbed: string[] = [];
+        const documentsToEmbed: { content: string; source: string }[] = [];
 
         // Chunk Resume
         if (resumeText) {
-            // Simple chunking by paragraph/newlines roughly
             const chunks = resumeText.split(/\n\s*\n/).filter(c => c.length > 50);
-            documentsToEmbed.push(...chunks);
+            chunks.forEach(c => documentsToEmbed.push({ content: c, source: "resume" }));
         }
 
-        // Chunk GitHub Data (Treat each repo as a chunk or group them)
+        // Chunk GitHub Data
         if (githubData) {
             const chunks = githubData.split('\n').filter(c => c.length > 20);
-            // Optionally group small chunks
-            documentsToEmbed.push(...chunks);
+            chunks.forEach(c => documentsToEmbed.push({ content: c, source: "github" }));
         }
 
         // Chunk Profile Info
         if (profileInfo) {
-            documentsToEmbed.push(profileInfo);
+            documentsToEmbed.push({ content: profileInfo, source: "github_profile" });
+        }
+
+        // Chunk Extra Details
+        if (extraDetails) {
+            const chunks = extraDetails.split(/\n\s*\n/).filter(c => c.length > 10);
+            chunks.forEach(c => documentsToEmbed.push({ content: c, source: "extra_details" }));
         }
 
         console.log(`Generating embeddings for ${documentsToEmbed.length} chunks...`);
 
         // Generate Embeddings in batch
         if (documentsToEmbed.length > 0) {
-            const embeddings = await generateEmbeddings(documentsToEmbed);
+            // Extract just the text content for embedding generation
+            const textChunks = documentsToEmbed.map(d => d.content);
+            const embeddings = await generateEmbeddings(textChunks);
 
             // Insert into Supabase
-            const records = documentsToEmbed.map((content, i) => ({
-                user_id: userId,
-                content: content,
-                embedding: embeddings[i],
-                metadata: { source: content.startsWith("Repo:") ? "github" : "resume" }
-            }));
+            const records = documentsToEmbed.map((doc, i) => {
+                return {
+                    user_id: userId,
+                    content: doc.content,
+                    embedding: embeddings[i],
+                    metadata: { source: doc.source }
+                };
+            });
 
             const { error: vectorError } = await supabaseAdmin
                 .from("documents")

@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 interface Profile {
     username: string;
+    role?: string;
     portfolio_data: {
         github?: string;
         role?: string;
@@ -33,6 +34,8 @@ export default function Dashboard() {
     const [isCheckingUsername, setIsCheckingUsername] = useState(false);
 
     const [resumeFile, setResumeFile] = useState<File | null>(null);
+    const [extraDetails, setExtraDetails] = useState("");
+
 
     useEffect(() => {
         const initDashboard = async () => {
@@ -81,6 +84,7 @@ export default function Dashboard() {
                 setGeneratedLink(`${typeof window !== 'undefined' ? window.location.origin : ''}/chat/${data.profile.username}`);
                 setUsername(data.profile.username);
                 setGithubUrl(data.profile.portfolio_data.github || "https://github.com/");
+                setExtraDetails(data.profile.portfolio_data.extra_details || "");
             } else {
                 setProfile(null);
                 setGeneratedLink("");
@@ -107,6 +111,7 @@ export default function Dashboard() {
                 setGeneratedLink("");
                 setUsername("");
                 setGithubUrl("https://github.com/");
+                setExtraDetails("");
                 setIsEditing(false);
             }
         } catch {
@@ -127,8 +132,8 @@ export default function Dashboard() {
         setLoading(true);
         setError("");
 
-        if ((!githubUrl && !resumeFile) || !username || !user) {
-            setError("Either GitHub URL or Resume (PDF) is required.");
+        if ((!githubUrl && !resumeFile && !extraDetails) || !username || !user) {
+            setError("At least one data source (GitHub, Resume, or Extra Details) is required.");
             setLoading(false);
             return;
         }
@@ -137,6 +142,7 @@ export default function Dashboard() {
         formData.append("github", githubUrl);
         formData.append("username", username);
         formData.append("userId", user.id);
+        formData.append("extraDetails", extraDetails);
         if (resumeFile) {
             formData.append("resume", resumeFile);
         }
@@ -215,12 +221,14 @@ export default function Dashboard() {
                         </p>
                     </div>
 
-                    <button
-                        onClick={handleLogout}
-                        className="px-6 py-3 border border-white/10 text-white hover:text-primary hover:border-primary/50 transition-all text-[11px] uppercase tracking-widest font-black"
-                    >
-                        [ Sign Out ]
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleLogout}
+                            className="px-6 py-3 border border-white/10 text-white hover:text-primary hover:border-primary/50 transition-all text-[11px] uppercase tracking-widest font-black"
+                        >
+                            [ Sign Out ]
+                        </button>
+                    </div>
                 </div>
 
                 {/* Main Content Area */}
@@ -406,10 +414,20 @@ export default function Dashboard() {
                                         className="w-full bg-white/[0.02] border border-white/10 py-4 px-4 focus:outline-none focus:border-primary/50 transition-all text-white font-mono text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-[10px] file:font-black file:bg-primary file:text-black hover:file:bg-primary/90"
                                         onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
                                     />
-                                    <p className="mt-2 text-[10px] text-white/40 uppercase tracking-widest">
-                                        * Provide at least one source (GitHub URL or Resume) to train your bot.
-                                    </p>
                                 </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Extra Details (Optional)</label>
+                                <textarea
+                                    placeholder="Add specific instructions, recent achievements, or bio overrides here..."
+                                    className="w-full bg-white/[0.02] border border-white/10 py-4 px-4 focus:outline-none focus:border-primary/50 transition-all text-white font-mono text-sm min-h-[100px]"
+                                    value={extraDetails}
+                                    onChange={(e) => setExtraDetails(e.target.value)}
+                                />
+                                <p className="text-[10px] text-white/40 uppercase tracking-widest">
+                                    * Provide at least one source to train your bot.
+                                </p>
                             </div>
 
                             {error && (
@@ -421,7 +439,7 @@ export default function Dashboard() {
 
                             <button
                                 type="submit"
-                                disabled={loading || (!githubUrl && !resumeFile) || !username || isUsernameAvailable === false || isCheckingUsername}
+                                disabled={loading || (!githubUrl && !resumeFile && !extraDetails) || !username || isUsernameAvailable === false || isCheckingUsername}
                                 className="w-full py-6 border border-primary text-primary font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:bg-primary hover:text-black transition-all disabled:opacity-20"
                             >
                                 {loading ? (
