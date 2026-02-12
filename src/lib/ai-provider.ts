@@ -11,9 +11,26 @@ const openrouter = createOpenAI({
     },
 });
 
+// List of free/experimental models to rotate through
+const FREE_MODELS = [
+    "google/gemma-3-12b-it:free",  // Latest Google Gemma 3
+    "google/gemma-3-4b-it:free",
+    "google/gemma-3-27b-it:free",
+    "meta-llama/llama-3.3-70b-instruct:free", // Reliable Llama
+    "meta-llama/llama-3.2-3b-instruct:free",
+    "mistralai/pixtral-12b:free",
+    "microsoft/phi-3-medium-128k-instruct:free",
+    "liquid/lfm-2.5-1.2b-instruct:free",
+    "google/gemini-2.0-pro-exp-02-05:free", // Keeping as fallback
+    "google/gemini-2.0-flash-exp:free",
+    "google/gemini-2.0-flash-thinking-exp:free",
+];
+
 export const MODELS = {
-    // Switching to Gemini 2.0 Pro Experimental (Free on OpenRouter)
-    PRO: "google/gemini-2.0-pro-exp-02-05:free"
+    // Dynamic getter to pick a random model from the free pool
+    get PRO() {
+        return FREE_MODELS[Math.floor(Math.random() * FREE_MODELS.length)];
+    }
 } as const;
 
 
@@ -57,13 +74,29 @@ function isQuotaError(error: unknown): boolean {
     return isRateLimit;
 }
 
-// Mock withRetry for OpenRouter since it handles its own internal routing/retries usually,
-// or we can implement simple retry if needed. For now, we pass through basic client.
+// Retry with model rotation
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function withRetry<T>(fn: (client: any) => Promise<T>): Promise<T> {
-    // Just execute with OpenRouter client
-    // We removed the rotation logic for now as OpenRouter abstracts providers
-    return await fn(openrouter);
+export async function withRetry<T>(fn: (client: any) => Promise<T>, retries = 3): Promise<T> {
+    let lastError: unknown;
+
+    for (let i = 0; i < retries; i++) {
+        try {
+            // Attempt execution
+            return await fn(openrouter);
+        } catch (error) {
+            lastError = error;
+            console.warn(`Attempt ${i + 1} failed with model rotation:`, error);
+
+            // If it's a quota error or specific model error, continue to next iteration (which picks new model via getter)
+            // If it's the last retry, throw
+            if (i === retries - 1) break;
+
+            // Add small delay before retry
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        }
+    }
+
+    throw lastError;
 }
 
 // Singleton for the embedding pipeline to avoid reloading logic
