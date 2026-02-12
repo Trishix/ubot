@@ -99,43 +99,50 @@ export async function withRetry<T>(fn: (client: any) => Promise<T>, retries = 3)
     throw lastError;
 }
 
-// Singleton for the embedding pipeline to avoid reloading logic
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let embeddingPipeline: any = null;
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { embed, embedMany } from "ai";
+
+// Pool of Google AI Studio keys for embeddings (Free Tier)
+const GOOGLE_KEYS = [
+    process.env.FREE_API_KEY_1,
+    process.env.FREE_API_KEY_2,
+    process.env.FREE_API_KEY_3,
+    process.env.FREE_API_KEY_4,
+    process.env.FREE_API_KEY_5,
+].filter(Boolean) as string[];
+
+const getRandomGoogleProvider = () => {
+    const apiKey = GOOGLE_KEYS[Math.floor(Math.random() * GOOGLE_KEYS.length)];
+    if (!apiKey) throw new Error("No Google API Keys available for embeddings");
+    return createGoogleGenerativeAI({ apiKey });
+};
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-    if (!embeddingPipeline) {
-        // Dynamic import to avoid build issues
-        const { pipeline, env } = await import("@xenova/transformers");
-
-        // Configure for Serverless (Vercel)
-        env.allowLocalModels = false;
-        env.useBrowserCache = false;
-
-        // 'Xenova/all-mpnet-base-v2' outputs 768 dimensions
-        embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
+    try {
+        const google = getRandomGoogleProvider();
+        const { embedding } = await embed({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            model: google.textEmbeddingModel("text-embedding-004") as any,
+            value: text,
+        });
+        return embedding;
+    } catch (error) {
+        console.error("Embedding Error (Single):", error);
+        throw error;
     }
-
-    const output = await embeddingPipeline(text, { pooling: "mean", normalize: true });
-    return Array.from(output.data);
 }
 
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-    if (!embeddingPipeline) {
-        const { pipeline, env } = await import("@xenova/transformers");
-
-        // Configure for Serverless (Vercel)
-        env.allowLocalModels = false;
-        env.useBrowserCache = false;
-
-        // 'Xenova/all-mpnet-base-v2' outputs 768 dimensions
-        embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
+    try {
+        const google = getRandomGoogleProvider();
+        const { embeddings } = await embedMany({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            model: google.textEmbeddingModel("text-embedding-004") as any,
+            values: texts,
+        });
+        return embeddings;
+    } catch (error) {
+        console.error("Embedding Error (Batch):", error);
+        throw error;
     }
-
-    const embeddings: number[][] = [];
-    for (const text of texts) {
-        const output = await embeddingPipeline(text, { pooling: "mean", normalize: true });
-        embeddings.push(Array.from(output.data));
-    }
-    return embeddings;
 }
