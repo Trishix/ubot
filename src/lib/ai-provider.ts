@@ -121,7 +121,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     try {
         const google = getRandomGoogleProvider();
         const { embedding } = await embed({
-            model: google.textEmbeddingModel("text-embedding-004"),
+            model: google.textEmbeddingModel("embedding-001"),
             value: text,
         });
         return embedding;
@@ -135,7 +135,7 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
     try {
         const google = getRandomGoogleProvider();
         const { embeddings } = await embedMany({
-            model: google.textEmbeddingModel("text-embedding-004"),
+            model: google.textEmbeddingModel("embedding-001"),
             values: texts,
         });
         return embeddings;
