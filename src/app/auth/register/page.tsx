@@ -54,7 +54,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <main className="min-h-screen flex items-center justify-center p-6 bg-black crt-overlay">
+        <main className="min-h-screen flex items-center justify-center p-6 pt-24 bg-black crt-overlay">
             <div className="w-full max-w-[420px] relative z-10">
                 <div className="border border-white/5 bg-[#050505] p-10">
                     <div className="mb-10 text-left">

@@ -32,6 +32,8 @@ export default function Dashboard() {
     const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null);
     const [isCheckingUsername, setIsCheckingUsername] = useState(false);
 
+    const [resumeFile, setResumeFile] = useState<File | null>(null);
+
     useEffect(() => {
         const initDashboard = async () => {
             const { data: { session } } = await supabase.auth.getSession();
@@ -76,7 +78,7 @@ export default function Dashboard() {
             const data = await res.json();
             if (data.profile) {
                 setProfile(data.profile);
-                setGeneratedLink(`${window.location.origin}/chat/${data.profile.username}`);
+                setGeneratedLink(`${typeof window !== 'undefined' ? window.location.origin : ''}/chat/${data.profile.username}`);
                 setUsername(data.profile.username);
                 setGithubUrl(data.profile.portfolio_data.github || "https://github.com/");
             } else {
@@ -125,8 +127,8 @@ export default function Dashboard() {
         setLoading(true);
         setError("");
 
-        if (!githubUrl || !username || !user) {
-            setError("Both GitHub URL and username are required.");
+        if ((!githubUrl && !resumeFile) || !username || !user) {
+            setError("Either GitHub URL or Resume (PDF) is required.");
             setLoading(false);
             return;
         }
@@ -135,6 +137,9 @@ export default function Dashboard() {
         formData.append("github", githubUrl);
         formData.append("username", username);
         formData.append("userId", user.id);
+        if (resumeFile) {
+            formData.append("resume", resumeFile);
+        }
 
         try {
             const res = await fetch("/api/ingest", {
@@ -167,7 +172,7 @@ export default function Dashboard() {
     }
 
     return (
-        <main className="min-h-screen bg-black crt-overlay py-10 md:py-20 px-4 md:px-6 relative overflow-hidden font-mono">
+        <main className="min-h-screen bg-black crt-overlay pt-24 pb-10 md:py-20 px-4 md:px-6 relative overflow-hidden font-mono">
             <AnimatePresence>
                 {loading && (
                     <motion.div
@@ -306,7 +311,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                     <code className="text-white/70 text-[10px] md:text-xs font-mono bg-black/50 p-3 rounded border border-white/10 w-full md:w-auto flex-1 break-all">
-                                        POST {window.location.origin}/api/chat/{profile.username}
+                                        POST {typeof window !== 'undefined' ? window.location.origin : ''}/api/chat/{profile.username}
                                     </code>
                                     <button
                                         onClick={() => {
@@ -378,12 +383,11 @@ export default function Dashboard() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-[11px] font-black text-white uppercase tracking-[0.2em]">GitHub Profile URL</label>
+                                    <label className="text-[11px] font-black text-white uppercase tracking-[0.2em]">GitHub Profile URL (Optional)</label>
                                     <div className="relative">
                                         <Github className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
                                         <input
                                             type="text"
-                                            required
                                             placeholder="https://github.com/..."
                                             className="w-full bg-white/[0.02] border border-white/10 py-5 pl-14 pr-4 focus:outline-none focus:border-primary/50 transition-all text-white text-sm"
                                             value={githubUrl}
@@ -393,21 +397,24 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
-                            {isUsernameAvailable === false && (
-                                <div className="p-4 border border-red-500/50 bg-red-500/5 text-red-500 text-[11px] uppercase tracking-widest font-black text-center">
-                                    SYSTEM ERROR: HANDLE &quot;@{username}&quot; IS RESERVED BY ANOTHER ARCHIVE
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Resume (PDF) - Optional</label>
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        accept="application/pdf"
+                                        className="w-full bg-white/[0.02] border border-white/10 py-4 px-4 focus:outline-none focus:border-primary/50 transition-all text-white font-mono text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-[10px] file:font-black file:bg-primary file:text-black hover:file:bg-primary/90"
+                                        onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                                    />
+                                    <p className="mt-2 text-[10px] text-white/40 uppercase tracking-widest">
+                                        Upload your resume to allow the bot to answer questions about your experience.
+                                    </p>
                                 </div>
-                            )}
-
-                            {error && (
-                                <div className="p-4 border border-red-500/50 bg-red-500/5 text-red-500 text-[11px] uppercase tracking-widest font-black text-center">
-                                    {error}
-                                </div>
-                            )}
+                            </div>
 
                             <button
                                 type="submit"
-                                disabled={loading || !githubUrl || !username || isUsernameAvailable === false || isCheckingUsername}
+                                disabled={loading || (!githubUrl && !resumeFile) || !username || isUsernameAvailable === false || isCheckingUsername}
                                 className="w-full py-6 border border-primary text-primary font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:bg-primary hover:text-black transition-all disabled:opacity-20"
                             >
                                 {loading ? (

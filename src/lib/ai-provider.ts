@@ -75,9 +75,11 @@ function isQuotaError(error: unknown): boolean {
         message.includes('quota exceeded') ||
         message.includes('exhausted') ||
         message.includes('too many requests') ||
+        message.includes('resource_exhausted') ||
         errorString.includes('quota') ||
         errorString.includes('rate_limit') ||
-        errorString.includes('429')
+        errorString.includes('429') ||
+        errorString.includes('resource_exhausted')
     );
 }
 
@@ -109,4 +111,33 @@ export async function withRetry<T>(fn: (client: ReturnType<typeof createGoogleGe
     }
 
     throw new Error(`All ${maxAttempts} API keys exhausted. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
+}
+
+// Singleton for the embedding pipeline to avoid reloading logic
+let embeddingPipeline: any = null;
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+    if (!embeddingPipeline) {
+        // Dynamic import to avoid build issues if mixed environments
+        const { pipeline } = await import("@xenova/transformers");
+        // 'Xenova/all-mpnet-base-v2' outputs 768 dimensions
+        embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
+    }
+
+    const output = await embeddingPipeline(text, { pooling: "mean", normalize: true });
+    return Array.from(output.data);
+}
+
+export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
+    if (!embeddingPipeline) {
+        const { pipeline } = await import("@xenova/transformers");
+        embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
+    }
+
+    const embeddings: number[][] = [];
+    for (const text of texts) {
+        const output = await embeddingPipeline(text, { pooling: "mean", normalize: true });
+        embeddings.push(Array.from(output.data));
+    }
+    return embeddings;
 }

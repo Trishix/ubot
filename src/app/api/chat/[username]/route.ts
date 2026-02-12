@@ -1,6 +1,6 @@
 import { streamText } from "ai";
 import { createClient } from "@supabase/supabase-js";
-import { withRetry, MODELS } from "@/lib/ai-provider";
+import { withRetry, MODELS, generateEmbedding } from "@/lib/ai-provider";
 
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,7 +30,7 @@ export async function POST(
         // 1. Fetch persona data
         const { data: profile, error: profileError } = await supabaseAdmin
             .from("profiles")
-            .select("portfolio_data")
+            .select("portfolio_data, user_id")
             .eq("username", username)
             .single();
 
@@ -42,6 +42,33 @@ export async function POST(
 
         // 2. Use withRetry for automatic key rotation
         return await withRetry(async (google) => {
+
+            // --- RAG RETRIEVAL START ---
+            let contextText = "";
+            try {
+                const userMessage = messages[messages.length - 1]?.content;
+                if (userMessage) {
+                    // Use Xenova local embedding
+                    const queryEmbedding = await generateEmbedding(userMessage);
+
+                    const { data: documents } = await supabaseAdmin.rpc("match_documents", {
+                        query_embedding: queryEmbedding,
+                        match_threshold: 0.5, // Adjust threshold as needed
+                        match_count: 5,
+                        filter_user_id: profile.user_id
+                    });
+
+                    if (documents && documents.length > 0) {
+                        contextText = documents.map((doc: { content: string }) => doc.content).join("\n\n");
+                        console.log(`RAG: Found ${documents.length} relevant context chunks.`);
+                    }
+                }
+            } catch (err) {
+                console.error("RAG Retrieval Failed:", err);
+                // Continue without context if RAG fails
+            }
+            // --- RAG RETRIEVAL END ---
+
             const result = await streamText({
                 model: google(MODELS.FLASH_LITE),
                 maxRetries: 0, // Disable internal retries for instant rotation
@@ -49,12 +76,16 @@ export async function POST(
                 Your biography: ${data.bio}.
                 Your skills: ${data.skills?.join(", ")}.
                 GitHub Profile: ${data.github}.
+
+                RELEVANT CONTEXT FROM YOUR KNOWLEDGE BASE (RESUME/GITHUB):
+                ${contextText ? contextText : "No specific context found for this query."}
                 
                 RESPONSE RULES:
                 - Always speak in the FIRST PERSON as ${data.name}.
                 - Maintain a professional, helpful, yet slightly tech-focused terminal-aesthetic personality.
                 - Keep responses concise and structured.
-                - If asked about things outside your work or profile, pivot back to your expertise.`,
+                - If asked about things outside your work or profile, pivot back to your expertise.
+                - Use the "RELEVANT CONTEXT" above to answer specific questions about your experience, specific projects, or resume details.`,
                 messages,
             });
 

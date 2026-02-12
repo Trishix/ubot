@@ -69,102 +69,105 @@ export default function DocumentationPage() {
                                     POST /api/chat/[username]
                                 </code>
                             </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <h3 className="text-xl font-black text-white uppercase italic">Usage Limits</h3>
-                            <p className="text-white/90 text-[11px] leading-relaxed uppercase">
-                                Standard accounts enjoy generous usage limits. For massive scale or custom needs, contact our enterprise team.
+                            <p className="text-white/50 text-[10px] uppercase tracking-widest mt-4">
+                                * CORS Enabled: Callable from any frontend.
                             </p>
-                            <div className="flex gap-4">
-                                <div className="flex-1 p-4 border border-white/10 text-center">
-                                    <span className="text-xl font-black text-primary italic">50</span>
-                                    <span className="block text-[9px] text-white/80 uppercase tracking-widest mt-1 font-black">REQS / HOUR</span>
-                                </div>
-                                <div className="flex-1 p-4 border border-white/10 text-center">
-                                    <span className="text-xl font-black text-white italic">12ms</span>
-                                    <span className="block text-[9px] text-white/80 uppercase tracking-widest mt-1 font-black">LATENCY</span>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Payload Documentation */}
-                <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-[1px] flex-1 bg-white/5" />
-                        <h2 className="text-[11px] font-black text-white uppercase tracking-[0.5em]">Request Format</h2>
-                        <div className="h-[1px] flex-1 bg-white/5" />
-                    </div>
-
-                    <div className="relative group">
-                        <div className="absolute -top-3 left-6 px-3 py-1 bg-black border border-primary/50 text-[10px] font-black text-primary uppercase tracking-[0.4em] z-20">
-                            JSON PAYLOAD
-                        </div>
-                        <div className="absolute top-4 right-4 z-20">
-                            <button
-                                onClick={handleCopyPayload}
-                                className="p-2 border border-white/10 bg-black hover:border-primary/50 text-white/50 hover:text-primary transition-all flex items-center gap-2 group/btn"
-                            >
-                                {copiedPayload ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
-                                <span className="text-[8px] font-black uppercase tracking-widest">{copiedPayload ? "COPIED" : "COPY"}</span>
-                            </button>
-                        </div>
-                        <div
-                            className="border border-white/10 bg-white/[0.01] p-12 relative overflow-hidden"
-                            style={{ clipPath: "polygon(0 0, 100% 0, 100% 95%, 98% 100%, 0 100%)" }}
-                        >
-                            <pre className="text-xs md:text-sm text-white leading-relaxed overflow-x-auto">
-                                <code>{payload}</code>
-                            </pre>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Integration Examples */}
-                <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-[1px] flex-1 bg-white/5" />
-                        <h2 className="text-[11px] font-black text-white uppercase tracking-[0.5em]">Integration Example</h2>
-                        <div className="h-[1px] flex-1 bg-white/5" />
                     </div>
 
                     <div className="space-y-6">
-                        <div className="p-8 border border-white/10 bg-white/[0.01] flex flex-col md:flex-row gap-8 items-start relative group">
-                            <div className="p-3 border border-primary text-primary">
-                                <Zap className="w-5 h-5" />
+                        <h3 className="text-xl font-black text-white uppercase italic">Usage Limits</h3>
+                        <p className="text-white/90 text-[11px] leading-relaxed uppercase">
+                            Standard accounts enjoy generous usage limits. For massive scale or custom needs, contact our enterprise team.
+                        </p>
+                        <div className="flex gap-4">
+                            <div className="flex-1 p-4 border border-white/10 text-center">
+                                <span className="text-xl font-black text-primary italic">50</span>
+                                <span className="block text-[9px] text-white/80 uppercase tracking-widest mt-1 font-black">REQS / HOUR</span>
                             </div>
-                            <div className="space-y-3 flex-1 w-full">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-white font-black uppercase text-sm italic">Sample cURL Command</h4>
-                                    <button
-                                        onClick={handleCopyCurl}
-                                        className="p-2 border border-white/10 bg-black hover:border-primary/50 text-white/50 hover:text-primary transition-all flex items-center gap-2"
-                                    >
-                                        {copiedCurl ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
-                                        <span className="text-[8px] font-black uppercase tracking-widest">{copiedCurl ? "COPIED" : "COPY"}</span>
-                                    </button>
-                                </div>
-                                <div className="relative">
-                                    <code className="block p-6 bg-black border border-white/10 text-xs text-white break-all leading-loose font-bold">
-                                        curl -X POST https://ubot-chat.vercel.app/api/chat/your_username \<br />
-                                        -H &quot;Content-Type: application/json&quot; \<br />
-                                        -d &#123;&quot;messages&quot;: [&#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello&quot;&#125;]&#125;
-                                    </code>
-                                </div>
+                            <div className="flex-1 p-4 border border-white/10 text-center">
+                                <span className="text-xl font-black text-white italic">12ms</span>
+                                <span className="block text-[9px] text-white/80 uppercase tracking-widest mt-1 font-black">LATENCY</span>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Footer Section */}
-                <div className="pt-20 border-t border-white/10 text-center space-y-6">
-                    <p className="text-[11px] text-white/90 uppercase tracking-[0.3em] font-black">Need more power?</p>
-                    <a href="/contact" className="inline-block px-10 py-5 border border-primary text-primary font-black uppercase text-xs tracking-[0.2em] hover:bg-primary hover:text-black transition-all">
-                        Contact Enterprise
-                    </a>
+            {/* Payload Documentation */}
+            <div className="space-y-8">
+                <div className="flex items-center gap-4">
+                    <div className="h-[1px] flex-1 bg-white/5" />
+                    <h2 className="text-[11px] font-black text-white uppercase tracking-[0.5em]">Request Format</h2>
+                    <div className="h-[1px] flex-1 bg-white/5" />
                 </div>
+
+                <div className="relative group">
+                    <div className="absolute -top-3 left-6 px-3 py-1 bg-black border border-primary/50 text-[10px] font-black text-primary uppercase tracking-[0.4em] z-20">
+                        JSON PAYLOAD
+                    </div>
+                    <div className="absolute top-4 right-4 z-20">
+                        <button
+                            onClick={handleCopyPayload}
+                            className="p-2 border border-white/10 bg-black hover:border-primary/50 text-white/50 hover:text-primary transition-all flex items-center gap-2 group/btn"
+                        >
+                            {copiedPayload ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
+                            <span className="text-[8px] font-black uppercase tracking-widest">{copiedPayload ? "COPIED" : "COPY"}</span>
+                        </button>
+                    </div>
+                    <div
+                        className="border border-white/10 bg-white/[0.01] p-12 relative overflow-hidden"
+                        style={{ clipPath: "polygon(0 0, 100% 0, 100% 95%, 98% 100%, 0 100%)" }}
+                    >
+                        <pre className="text-xs md:text-sm text-white leading-relaxed overflow-x-auto">
+                            <code>{payload}</code>
+                        </pre>
+                    </div>
+                </div>
+            </div>
+
+            {/* Integration Examples */}
+            <div className="space-y-8">
+                <div className="flex items-center gap-4">
+                    <div className="h-[1px] flex-1 bg-white/5" />
+                    <h2 className="text-[11px] font-black text-white uppercase tracking-[0.5em]">Integration Example</h2>
+                    <div className="h-[1px] flex-1 bg-white/5" />
+                </div>
+
+                <div className="space-y-6">
+                    <div className="p-8 border border-white/10 bg-white/[0.01] flex flex-col md:flex-row gap-8 items-start relative group">
+                        <div className="p-3 border border-primary text-primary">
+                            <Zap className="w-5 h-5" />
+                        </div>
+                        <div className="space-y-3 flex-1 w-full">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-white font-black uppercase text-sm italic">Sample cURL Command</h4>
+                                <button
+                                    onClick={handleCopyCurl}
+                                    className="p-2 border border-white/10 bg-black hover:border-primary/50 text-white/50 hover:text-primary transition-all flex items-center gap-2"
+                                >
+                                    {copiedCurl ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
+                                    <span className="text-[8px] font-black uppercase tracking-widest">{copiedCurl ? "COPIED" : "COPY"}</span>
+                                </button>
+                            </div>
+                            <div className="relative">
+                                <code className="block p-6 bg-black border border-white/10 text-xs text-white break-all leading-loose font-bold">
+                                    curl -X POST https://ubot-chat.vercel.app/api/chat/your_username \<br />
+                                    -H &quot;Content-Type: application/json&quot; \<br />
+                                    -d &#123;&quot;messages&quot;: [&#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello&quot;&#125;]&#125;
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer Section */}
+            <div className="pt-20 border-t border-white/10 text-center space-y-6">
+                <p className="text-[11px] text-white/90 uppercase tracking-[0.3em] font-black">Need more power?</p>
+                <a href="/contact" className="inline-block px-10 py-5 border border-primary text-primary font-black uppercase text-xs tracking-[0.2em] hover:bg-primary hover:text-black transition-all">
+                    Contact Enterprise
+                </a>
             </div>
         </main>
     );

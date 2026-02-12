@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
-import { generateText } from "ai";
+import { generateText, embedMany } from "ai";
 import { createClient } from "@supabase/supabase-js";
-import { withRetry, MODELS } from "@/lib/ai-provider";
+import { withRetry, MODELS, getGoogleClient, generateEmbeddings } from "@/lib/ai-provider";
+// @ts-ignore
+const { PDFParse } = require("pdf-parse");
+
+// Increase body size limit for file uploads if needed (Next.js config might be required)
 
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,9 +18,10 @@ export async function POST(req: Request) {
         const githubUrl = formData.get("github") as string;
         const username = formData.get("username") as string;
         const userId = formData.get("userId") as string; // Add userId to associate with account
+        const resumeFile = formData.get("resume") as File | null;
 
-        if (!githubUrl || !username || !userId) {
-            return NextResponse.json({ error: "Missing fields. Ensure you are logged in." }, { status: 400 });
+        if ((!githubUrl && !resumeFile) || !username || !userId) {
+            return NextResponse.json({ error: "Either GitHub URL or Resume is required." }, { status: 400 });
         }
 
         // 1. Check if username is already taken by another user
@@ -33,7 +38,24 @@ export async function POST(req: Request) {
         const githubUsername = githubUrl.split("/").filter(Boolean).pop();
         let githubData = "";
         let profileInfo = "";
+        let resumeText = "";
         let githubId = null;
+
+        // Process Resume PDF if provided
+        if (resumeFile) {
+            try {
+                const arrayBuffer = await resumeFile.arrayBuffer();
+                const buffer = Buffer.from(arrayBuffer);
+                const parser = new PDFParse({ data: buffer });
+                const data = await parser.getText();
+                await parser.destroy();
+                resumeText = data.text;
+                console.log("Resume parsed successfully, length:", resumeText.length);
+            } catch (error) {
+                console.error("PDF Parsing Error:", error);
+                // Continue without resume if parsing fails, but warn
+            }
+        }
 
         if (githubUsername) {
             try {
@@ -46,7 +68,7 @@ export async function POST(req: Request) {
 
                 if (userRes.ok) {
                     const profile = await userRes.json();
-                    profileInfo = `Name: ${profile.name || profile.login}, Bio: ${profile.bio || ""}, Company: ${profile.company || ""}, Location: ${profile.location || ""}`;
+                    profileInfo = `Name: ${profile.name || profile.login}, Bio: ${profile.bio || ""}, Company: ${profile.company || ""}, Location: ${profile.location || ""}, Blog: ${profile.blog || ""}`;
                     githubId = profile.id;
                 }
 
@@ -69,16 +91,16 @@ export async function POST(req: Request) {
             }
         }
 
-        if (!githubData && !profileInfo) {
-            throw new Error("Could not retrieve any data from the provided GitHub URL.");
+        if (!githubData && !profileInfo && !resumeText) {
+            throw new Error("Could not retrieve any data from the provided sources.");
         }
 
-        // Use withRetry for automatic key rotation
+        // Generate Structured Persona from GitHub + Resume Summary
         const structuredData = await withRetry(async (google) => {
             const { text } = await generateText({
                 model: google(MODELS.FLASH),
-                maxRetries: 0, // Disable internal retries so withRetry handles key rotation instantly
-                prompt: `Create a professional chatbot persona based on this GitHub profile and repositories. 
+                maxRetries: 0,
+                prompt: `Create a professional chatbot persona based on this GitHub profile, repositories, and Resume. 
                 Output ONLY a JSON object with keys: name, role, bio, skills (array), github.
           
                 STRICT RULE: Represent the person in the FIRST PERSON ("I am...", "I built...").
@@ -87,7 +109,11 @@ export async function POST(req: Request) {
                 ${profileInfo}
           
                 GITHUB REPOSITORIES:
-                ${githubData}`,
+                ${githubData}
+
+                RESUME SUMMARY (if any):
+                ${resumeText.slice(0, 2000)}... (truncated for summary)
+                `,
             });
             return text;
         });
@@ -97,19 +123,70 @@ export async function POST(req: Request) {
 
         const portfolioJson = JSON.parse(jsonMatch[0]);
 
-        const { error } = await supabaseAdmin
+        // Upsert Profile
+        const { error: profileError } = await supabaseAdmin
             .from("profiles")
             .upsert({
-                user_id: userId, // Associate with user account
-                github_id: githubId, // Store GitHub ID for uniqueness check
+                user_id: userId,
+                github_id: githubId,
                 username,
                 portfolio_data: portfolioJson,
                 updated_at: new Date().toISOString()
             }, {
-                onConflict: 'user_id' // Ensure only one chatbot per account
+                onConflict: 'user_id'
             });
 
-        if (error) throw error;
+        if (profileError) throw profileError;
+
+        // --- VECTOR INGESTION START ---
+        // Clear existing documents for this user before adding new ones (full re-index strategy)
+        await supabaseAdmin.from("documents").delete().eq("user_id", userId);
+
+        const documentsToEmbed: string[] = [];
+
+        // Chunk Resume
+        if (resumeText) {
+            // Simple chunking by paragraph/newlines roughly
+            const chunks = resumeText.split(/\n\s*\n/).filter(c => c.length > 50);
+            documentsToEmbed.push(...chunks);
+        }
+
+        // Chunk GitHub Data (Treat each repo as a chunk or group them)
+        if (githubData) {
+            const chunks = githubData.split('\n').filter(c => c.length > 20);
+            // Optionally group small chunks
+            documentsToEmbed.push(...chunks);
+        }
+
+        // Chunk Profile Info
+        if (profileInfo) {
+            documentsToEmbed.push(profileInfo);
+        }
+
+        console.log(`Generating embeddings for ${documentsToEmbed.length} chunks...`);
+
+        // Generate Embeddings in batch
+        if (documentsToEmbed.length > 0) {
+            const embeddings = await generateEmbeddings(documentsToEmbed);
+
+            // Insert into Supabase
+            const records = documentsToEmbed.map((content, i) => ({
+                user_id: userId,
+                content: content,
+                embedding: embeddings[i],
+                metadata: { source: content.startsWith("Repo:") ? "github" : "resume" }
+            }));
+
+            const { error: vectorError } = await supabaseAdmin
+                .from("documents")
+                .insert(records);
+
+            if (vectorError) {
+                console.error("Vector Insert Error:", vectorError);
+                // We don't fail the whole request if vector insert fails, but log it
+            }
+        }
+        // --- VECTOR INGESTION END ---
 
         return NextResponse.json({ success: true, portfolio: portfolioJson });
 

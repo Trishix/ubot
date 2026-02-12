@@ -24,16 +24,14 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center bg-black crt-overlay">
+    <main className="relative min-h-screen flex flex-col items-center justify-center bg-black crt-overlay pt-20 px-4">
 
 
       {/* Hero Content - Instant Visibility */}
       <div className="relative z-10 max-w-4xl px-6 text-center">
         <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-6 text-white uppercase italic leading-[1]">
-          Turn your <span className="text-primary">GitHub</span> into an AI Chatbot
-        </h1>
-
-        <p className="text-base md:text-xl text-white/80 mb-10 max-w-2xl mx-auto font-mono leading-relaxed">
+          Turn your <span className="text-primary">Portfolio</span> into an AI Chatbot
+        </h1>      <p className="text-base md:text-xl text-white/80 mb-10 max-w-2xl mx-auto font-mono leading-relaxed">
           The professional AI representative for developers.
           Sync your profile and get a shareable link in under 2 minutes.
         </p>
@@ -116,6 +114,6 @@ export default function LandingPage() {
           © 2026 UBOT // v1.0.0
         </div>
       </footer>
-    </main>
+    </main >
   );
 }

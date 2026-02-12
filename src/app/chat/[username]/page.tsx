@@ -38,7 +38,12 @@ export default function PublicBot() {
         api: `/api/chat/${username}`,
         initialMessages: [
             { id: "boot-1", role: "system", content: `Connected to @${username}` },
-            { id: "boot-2", role: "system", content: "AI Personality Loaded" }
+            { id: "boot-2", role: "system", content: "AI Personality Loaded" },
+            {
+                id: "intro",
+                role: "assistant",
+                content: `beeps* System Online.\n\nI am the AI assistant for @${username}. I have full access to their GitHub repositories and professional portfolio.\n\nAsk me about their:\n- Latest projects\n- Tech stack & skills\n- Coding philosophy\n- Contact info\n\nHow can I help you today?`
+            }
         ],
         onError: (err) => {
             console.error("Chat Error:", err);

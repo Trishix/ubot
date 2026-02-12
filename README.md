@@ -1,77 +1,136 @@
-# UBOT Platform
 
-UBOT is an AI-powered platform that allows users to create their own "AI Career Twin" - a personalized chatbot that can answer questions based on their professional profile, GitHub activity, and resume.
 
-## 🚀 Features
+**UBOT** is an intelligent platform that lets you clone your professional identity into an AI chatbot. It digests your Resume (PDF) and GitHub profile to create a conversational agent that speaks for you, answers recruiters' questions, and showcases your skills—24/7.
 
-- **AI Career Twin**: Generate a personalized chatbot trained on your professional data.
-- **GitHub Integration**: Automatically fetch and analyze your GitHub repositories.
-- **Resume Parsing**: Upload your CV to extract skills and experience.
-- **Terminal-Style UI**: A sleek, hacker-themed interface for a unique user experience.
-- **Dual Email System**: Professional contact form with support notifications and user confirmations.
+![UBOT Terminal Interface](/public/og-image.png)
 
-## 🛠️ Tech Stack
+## 🧠 How It Works
 
-- **Framework**: Next.js 16 (App Router)
-- **AI Engine**: Google Gemini 2.5 Flash / Flash-Lite
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Styling**: Tailwind CSS + Custom Terminal Theme
-- **Email**: Resend API
+### 1. **Ingestion & Processing**
+*   **Input**: You upload a **PDF Resume** and optionally provide a **GitHub username**.
+*   **Parsing**:
+    *   `pdf-parse` extracts text from your resume.
+    *   GitHub API fetches your pinned repositories, languages, and bio.
+*   **Persona Generation**:
+    *   Google Gemini (Flash/Lite) analyzes this raw data to build a structured JSON profile (Bio, Role, Skills, etc.).
+*   **Vector Embeddings (RAG)**:
+    *   **Local Embeddings**: We use **@xenova/transformers** (`all-mpnet-base-v2`) to generate high-quality vector embeddings of your data locally on the server.
+    *   *Why Local?* This avoids external API rate limits and quotas for embeddings, making ingestion free and fast.
+    *   Vectors are stored in **Supabase** (PostgreSQL + `pgvector`).
 
-## 📚 Documentation
+### 2. **The Chat Experience**
+*   **Retrieval Augmented Generation (RAG)**:
+    *   When a user asks a question, we generate an embedding for their query (using Xenova).
+    *   We perform a **semantic search** in Supabase to find the most relevant chunks of your resume and GitHub data.
+*   **Response Generation**:
+    *   The relevant context is fed into **Google Gemini**, which answers in the first person ("I built...", "My experience...").
 
-Detailed documentation is available in the `docs/` directory:
+---
 
-- [**Email Service Guide**](docs/EMAIL_SERVICE.md): Configuration and usage of the dual email system.
-- [**Quick Start Email**](docs/QUICK_START_EMAIL.md): Fast setup guide for email functionality.
-- [**API Quota Guide**](docs/API_QUOTA_GUIDE.md): Managing Google AI API limits and key rotation.
-- [**Build Summary**](docs/BUILD_SUMMARY.md): Changelog and resolution of recent build issues.
+## 🛠️ Compute Stack
+
+| Component | Technology | Description |
+| :--- | :--- | :--- |
+| **Framework** | **Next.js 16** | App Router, Server Actions, React Server Components. |
+| **Language** | **TypeScript** | Full type safety across API and UI. |
+| **Database** | **Supabase** | PostgreSQL for data, **pgvector** for RAG, and Authentication. |
+| **LLM Inference** | **Google Gemini** | `gemini-2.5-flash-lite` for fast, intelligent responses. |
+| **Embeddings** | **Xenova** | `@xenova/transformers` running `all-mpnet-base-v2` locally. |
+| **Styling** | **Tailwind CSS** | Custom "Terminal/Hacker" design system. |
+| **Email** | **Resend** | Transactional emails for contact forms. |
+
+---
+
+## 🚀 Key Features
+
+*   **📄 PDF Resume RAG**: Upload your CV, and the bot learns every detail—from work history to soft skills.
+*   **🐙 GitHub Integration**: Auto-syncs your top repos to answer technical questions about your code.
+*   **⚡ CV-Only Mode**: Don't have active GitHub? No problem. Create a bot with just your Resume.
+*   **🔋 Dual-Input**: Use both sources for the ultimate "Career Twin".
+*   **🖥️ Terminal UI**: A distinct, immersive aesthetic that stands out from generic chat interfaces.
+*   **🔗 Custom Handle**: Get a unique link (e.g., `ubot.com/chat/yourname`) to share with recruiters.
+
+---
 
 ## 🚦 Getting Started
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/ubot.git
-   cd ubot
-   ```
+### Prerequisites
+*   Node.js 20+
+*   Supabase Account (with `vector` extension enabled)
+*   Google AI Studio Key (Free tier works!)
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### Installation
 
-3. **Configure environment variables**
-   Copy `.env.example` to `.env.local` and fill in your API keys:
-   ```bash
-   cp .env.example .env.local
-   ```
-   Required keys:
-   - Supabase URL & Anon Key
-   - GitHub Token
-   - Google AI API Key(s)
-   - Resend API Key (for emails)
+1.  **Clone & Install**
+    ```bash
+    git clone https://github.com/yourusername/ubot.git
+    cd ubot
+    npm install
+    ```
 
-4. **Run the development server**
-   ```bash
-   npm run dev
-   ```
+2.  **Environment Setup**
+    Create `.env.local` with the following:
+    ```bash
+    # Supabase
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-5. **Open locally**
-   Visit [http://localhost:3000](http://localhost:3000)
+    # Google Gemini
+    GOOGLE_API_KEY=your_gemini_key
+    # Optional: Multiple keys for rotation to avoid rate limits
+    FREE_API_KEY_1=another_key
 
-## 📧 Email Service Setup
+    # GitHub (Optional but recommended for higher limits)
+    GITHUB_TOKEN=your_github_token
+    ```
 
-The platform uses **Resend** for transactional emails. To enable:
+3.  **Database Setup (SQL)**
+    Run this in your Supabase SQL Editor:
+    ```sql
+    -- Enable Vector Extension
+    create extension if not exists vector;
 
-1. Add `RESEND_API_KEY` to `.env.local`
-2. Verify your domain in Resend dashboard (for production)
-3. See [Email Service Guide](docs/EMAIL_SERVICE.md) for full details.
+    -- Documents Table for RAG
+    create table documents (
+      id bigserial primary key,
+      content text,
+      metadata jsonb,
+      embedding vector(768), -- Matches Xenova mpnet-base-v2 dimensions
+      user_id uuid references auth.users not null
+    );
 
-## 🤝 Contributing
+    -- Search Function
+    create or replace function match_documents (
+      query_embedding vector(768),
+      match_threshold float,
+      match_count int,
+      filter_user_id uuid
+    ) returns table (
+      id bigint,
+      content text,
+      metadata jsonb,
+      similarity float
+    ) language plpgsql stable as $$
+    begin
+      return query select
+        id,
+        content,
+        metadata,
+        1 - (documents.embedding <=> query_embedding) as similarity
+      from documents
+      where 1 - (documents.embedding <=> query_embedding) > match_threshold
+      and user_id = filter_user_id
+      order by documents.embedding <=> query_embedding
+      limit match_count;
+    end;
+    $$;
+    ```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+4.  **Run Development Server**
+    ```bash
+    npm run dev
+    ```
 
 ## 📄 License
-
-This project is licensed under the MIT License.
+MIT License. Built for the future of work.
