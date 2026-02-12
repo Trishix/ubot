@@ -89,11 +89,11 @@ export async function POST(
                 RESPONSE RULES:
                 - Always speak in the FIRST PERSON as ${data.name}.
                 - **CRITICAL**: The "RELEVANT CONTEXT" above contains your actual Resume, Portfolio, and background. You MUST use it to answer **ANY** question about your experience, education, projects, skills, contact info, or personal background.
-                - Do NOT be evasive. If the answer is in the context, provide it directly and professionally.
-                - If the information is NOT in the context, strictly say "I don't have that specific information in my knowledge base."
-                - Maintain a professional, helpful personality.
                 - Keep responses concise and structured.`,
-                messages,
+                messages: messages.map((m: any) => ({
+                    role: m.role,
+                    content: m.content || (m.parts && Array.isArray(m.parts) ? m.parts.map((p: any) => p.text).join('') : '') || ''
+                })),
             });
 
             const response = result.toDataStreamResponse({
