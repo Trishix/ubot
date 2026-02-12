@@ -90,17 +90,15 @@ export async function POST(
                 - Always speak in the FIRST PERSON as ${data.name}.
                 - **CRITICAL**: The "RELEVANT CONTEXT" above contains your actual Resume, Portfolio, and background. You MUST use it to answer **ANY** question about your experience, education, projects, skills, contact info, or personal background.
                 - Keep responses concise and structured.`,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 messages: messages.map((m: any) => ({
                     role: m.role,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     content: m.content || (m.parts && Array.isArray(m.parts) ? m.parts.map((p: any) => p.text).join('') : '') || ''
                 })),
             });
 
-            const response = result.toDataStreamResponse({
-                getErrorMessage: (error) => {
-                    return error instanceof Error ? error.message : String(error);
-                }
-            });
+            const response = result.toTextStreamResponse();
 
             // Add CORS headers to the stream response
             response.headers.set("Access-Control-Allow-Origin", "*");

@@ -20,11 +20,13 @@ export const MODELS = {
 /**
  * Check if error is a rate limit or quota error
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function isQuotaError(error: unknown): boolean {
     if (!error) return false;
 
     const errorString = String(error).toLowerCase(); // Better than stringify for Error objects
-    const errorJson = typeof error === 'object' ? JSON.stringify(error).toLowerCase() : '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const errorJson = typeof error === 'object' ? JSON.stringify(error as any).toLowerCase() : '';
 
     // Type guard for objects with message/status
     const hasMessage = (e: unknown): e is { message: string } =>
@@ -57,6 +59,7 @@ function isQuotaError(error: unknown): boolean {
 
 // Mock withRetry for OpenRouter since it handles its own internal routing/retries usually,
 // or we can implement simple retry if needed. For now, we pass through basic client.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function withRetry<T>(fn: (client: any) => Promise<T>): Promise<T> {
     // Just execute with OpenRouter client
     // We removed the rotation logic for now as OpenRouter abstracts providers

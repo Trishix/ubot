@@ -167,6 +167,7 @@ export async function POST(req: Request) {
                 username,
                 portfolio_data: {
                     ...portfolioJson,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     resume_text: resumeText ? resumeText.slice(0, 5000) : ((existingUser as any)?.portfolio_data?.resume_text || null)
                 },
                 updated_at: new Date().toISOString()

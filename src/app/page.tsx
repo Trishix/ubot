@@ -66,18 +66,6 @@ export default function LandingPage() {
         <div className="mt-12 md:mt-24 grid grid-cols-1 md:grid-cols-3 border border-white/5 divide-y md:divide-y-0 md:divide-x divide-white/5">
           {[
             {
-              title: "Instant Knowledge",
-              desc: "Your bot learns directly from your public repositories and contributions."
-            },
-            {
-              title: "Lightning Fast",
-              desc: "Engineered for speed with a minimalist interface and ultra-low latency."
-            },
-            {
-              title: "Personal Handle",
-              desc: "Get a permanent link for your bio that represents your code 24/7."
-            },
-            {
               title: "Source Sync",
               desc: "Build knowledge directly from your public repositories and contributions."
             },
@@ -89,7 +77,7 @@ export default function LandingPage() {
               title: "Personal Handle",
               desc: "A permanent ubot-chat.vercel.app/at/username link for your professional bio."
             },
-          ].slice(0, 3).map((benefit, i) => (
+          ].map((benefit, i) => (
             <div key={i} className="p-8 text-left hover:bg-white/[0.02] transition-colors">
               <h3 className="text-[10px] font-black tracking-[0.2em] text-primary mb-3 uppercase font-mono">
                 {benefit.title}
