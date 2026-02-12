@@ -45,8 +45,8 @@ export async function POST(
 
         const data = profile.portfolio_data;
 
-        // 2. Use withRetry for automatic key rotation
-        return await withRetry(async (google) => {
+        // 2. Use withRetry for automatic key rotation (now OpenRouter passthrough)
+        return await withRetry(async (ai) => {
 
             // --- RAG RETRIEVAL START ---
             let contextText = "";
@@ -76,7 +76,7 @@ export async function POST(
             // --- RAG RETRIEVAL END ---
 
             const result = await streamText({
-                model: google(MODELS.FLASH_LITE),
+                model: ai(MODELS.PRO),
                 maxRetries: 0, // Disable internal retries for instant rotation
                 system: `You are ${data.name}, ${data.role}.
                 Your biography: ${data.bio}.

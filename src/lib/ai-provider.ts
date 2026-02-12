@@ -1,3 +1,5 @@
+import { createOpenAI } from "@ai-sdk/openai";
+/*
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
 const keys = Array.from(new Set([
@@ -46,6 +48,23 @@ export function rotateKey() {
     console.log(`📡 Rotating API Key: Index ${previousIndex} → ${currentKeyIndex}`);
     return currentKeyIndex;
 }
+*/
+
+// --- OPENROUTER CONFIGURATION ---
+const openrouter = createOpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENROUTER_API_KEY,
+    headers: {
+        "HTTP-Referer": "https://ubot-chat.vercel.app", // Optional: Your site URL
+        "X-Title": "UBOT" // Optional: Your site name
+    }
+});
+
+export const MODELS = {
+    // Switching to Gemini 2.0 Pro Experimental (Free on OpenRouter)
+    PRO: "google/gemini-2.0-pro-exp-02-05:free"
+} as const;
+
 
 /**
  * Check if error is a rate limit or quota error
@@ -88,34 +107,12 @@ function isQuotaError(error: unknown): boolean {
     return isRateLimit;
 }
 
-/**
- * Execute an AI task with automatic key rotation on rate limits
- */
-export async function withRetry<T>(fn: (client: ReturnType<typeof createGoogleGenerativeAI>) => Promise<T>): Promise<T> {
-    const maxAttempts = keys.length;
-    let lastError: unknown;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        try {
-            const client = getGoogleClient();
-            return await fn(client);
-        } catch (error: unknown) {
-            lastError = error;
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error(`❌ API Key ${currentKeyIndex} failed:`, errorMessage);
-
-            if (isQuotaError(error) && attempt < maxAttempts - 1) {
-                rotateKey();
-                console.log(`🔄 Retrying with next API key (attempt ${attempt + 2}/${maxAttempts})...`);
-                continue;
-            }
-
-            // If it's not a quota error or we're out of keys, throw immediately
-            throw error;
-        }
-    }
-
-    throw new Error(`All ${maxAttempts} API keys exhausted. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
+// Mock withRetry for OpenRouter since it handles its own internal routing/retries usually,
+// or we can implement simple retry if needed. For now, we pass through basic client.
+export async function withRetry<T>(fn: (client: any) => Promise<T>): Promise<T> {
+    // Just execute with OpenRouter client
+    // We removed the rotation logic for now as OpenRouter abstracts providers
+    return await fn(openrouter);
 }
 
 // Singleton for the embedding pipeline to avoid reloading logic
@@ -124,8 +121,13 @@ let embeddingPipeline: any = null;
 
 export async function generateEmbedding(text: string): Promise<number[]> {
     if (!embeddingPipeline) {
-        // Dynamic import to avoid build issues if mixed environments
-        const { pipeline } = await import("@xenova/transformers");
+        // Dynamic import to avoid build issues
+        const { pipeline, env } = await import("@xenova/transformers");
+
+        // Configure for Serverless (Vercel)
+        env.allowLocalModels = false;
+        env.useBrowserCache = false;
+
         // 'Xenova/all-mpnet-base-v2' outputs 768 dimensions
         embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
     }
@@ -136,7 +138,12 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
     if (!embeddingPipeline) {
-        const { pipeline } = await import("@xenova/transformers");
+        const { pipeline, env } = await import("@xenova/transformers");
+
+        // Configure for Serverless (Vercel)
+        env.allowLocalModels = false;
+        env.useBrowserCache = false;
+
         embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-mpnet-base-v2");
     }
 
