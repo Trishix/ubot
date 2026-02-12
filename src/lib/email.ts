@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Configurable email addresses
 const FROM_EMAIL = process.env.RESEND_EMAIL || 'noreply@ubot-chat.vercel.app';
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@ubot-chat.vercel.app';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'trishitofficial@gmail.com';
 
 interface ContactEmailData {
     name: string;

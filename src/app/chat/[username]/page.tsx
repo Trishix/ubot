@@ -42,7 +42,7 @@ export default function PublicBot() {
             {
                 id: "intro",
                 role: "assistant",
-                content: `beeps* System Online.\n\nI am the AI assistant for @${username}. I have full access to their GitHub repositories and professional portfolio.\n\nAsk me about their:\n- Latest projects\n- Tech stack & skills\n- Coding philosophy\n- Contact info\n\nHow can I help you today?`
+                content: `System Online.\n\nI am the AI assistant for @${username}.\n\nAsk me about their:\n- Professional Experience\n- Key Skills & Expertise\n- Projects & Achievements\n- Contact info\n\nHow can I help you today?`
             }
         ],
         onError: (err) => {

@@ -77,15 +77,15 @@ export async function POST(
                 Your skills: ${data.skills?.join(", ")}.
                 GitHub Profile: ${data.github}.
 
-                RELEVANT CONTEXT FROM YOUR KNOWLEDGE BASE (RESUME/GITHUB):
+                RELEVANT CONTEXT FROM YOUR KNOWLEDGE BASE (RESUME/PORTFOLIO):
                 ${contextText ? contextText : "No specific context found for this query."}
                 
                 RESPONSE RULES:
                 - Always speak in the FIRST PERSON as ${data.name}.
-                - Maintain a professional, helpful, yet slightly tech-focused terminal-aesthetic personality.
+                - Maintain a professional, helpful personality adapted to your domain (Tech, Creative, Corporate, etc.).
                 - Keep responses concise and structured.
                 - If asked about things outside your work or profile, pivot back to your expertise.
-                - Use the "RELEVANT CONTEXT" above to answer specific questions about your experience, specific projects, or resume details.`,
+                - Use the "RELEVANT CONTEXT" above to answer specific questions about your experience, projects, or resume details.`,
                 messages,
             });
 

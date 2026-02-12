@@ -64,7 +64,7 @@ export default function ContactPage() {
                             <div className="space-y-6">
                                 <div className="group cursor-pointer">
                                     <span className="block text-[10px] text-primary uppercase tracking-widest mb-1 font-black group-hover:text-white transition-colors">Email</span>
-                                    <p className="text-sm text-white font-black uppercase tracking-tight">support@ubot-chat.vercel.app</p>
+                                    <p className="text-sm text-white font-black uppercase tracking-tight">trishitofficial@gmail.com</p>
                                 </div>
                                 <div className="group cursor-pointer">
                                     <span className="block text-[10px] text-primary uppercase tracking-widest mb-1 font-black group-hover:text-white transition-colors">System Status</span>
