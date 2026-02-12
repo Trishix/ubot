@@ -7,10 +7,26 @@ const { PDFParse } = require("pdf-parse");
 
 // Increase body size limit for file uploads if needed (Next.js config might be required)
 
+// Force Node.js runtime for PDF parsing and local embeddings
+export const maxDuration = 60; // Allow 60 seconds for processing
+export const dynamic = 'force-dynamic';
+
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+// Add OPTIONS handler for CORS preflight (if needed) and to satisfy Vercel routing
+export async function OPTIONS() {
+    return new Response(null, {
+        status: 200,
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+    });
+}
 
 export async function POST(req: Request) {
     try {
