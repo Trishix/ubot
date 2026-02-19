@@ -23,10 +23,10 @@ export async function POST(req: Request) {
         }
 
         const contactData = {
-            name: name.trim(),
-            email: email.trim().toLowerCase(),
-            subject: subject?.trim() || "General Inquiry",
-            message: message.trim(),
+            name: (name || "").trim(),
+            email: (email || "").trim().toLowerCase(),
+            subject: (subject || "General Inquiry").trim(),
+            message: (message || "").trim(),
         };
 
         console.log("📬 Processing contact form submission:", {

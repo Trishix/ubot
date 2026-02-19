@@ -116,9 +116,9 @@ export async function POST(req: Request) {
         }
 
         // Generate Structured Persona from GitHub + Resume Summary + Extra Details
-        const structuredData = await withRetry(async (ai) => {
+        const structuredData = await withRetry(async (ai, modelId) => {
             const { text } = await generateText({
-                model: ai(MODELS.PRO),
+                model: ai.chat(modelId),
                 maxRetries: 0,
                 prompt: `Create a professional chatbot persona based on this GitHub profile, repositories, Resume, and Extra Details.
                 Output ONLY a JSON object with keys: name, role, bio, skills (array), github.

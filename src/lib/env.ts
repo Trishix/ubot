@@ -4,7 +4,7 @@ export const validateEnv = () => {
         'NEXT_PUBLIC_SUPABASE_ANON_KEY',
         'SUPABASE_SERVICE_ROLE_KEY',
         'GITHUB_TOKEN',
-        'FREE_API_KEY_1'
+        'OPENROUTER_API_KEY'
     ];
 
     const missing = required.filter(key => !process.env[key]);

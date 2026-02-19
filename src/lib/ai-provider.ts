@@ -1,38 +1,41 @@
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
+import { embed, embedMany } from "ai";
 
-// --- OPENROUTER CONFIGURATION ---
-// OpenRouter using OpenAI compatibility
+// --- OPENROUTER CONFIGURATION (For Chat) ---
 const openrouter = createOpenAI({
     baseURL: "https://openrouter.ai/api/v1",
     apiKey: process.env.OPENROUTER_API_KEY,
     headers: {
-        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://ubot-chat.vercel.app", // Optional, for including your app on openrouter.ai rankings.
-        "X-Title": "UBot", // Optional. Shows in rankings on openrouter.ai.
+        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://ubot-chat.vercel.app",
+        "X-Title": "UBot",
     },
 });
 
-// List of free/experimental models to rotate through
-const FREE_MODELS = [
-    "google/gemma-3-12b-it:free",  // Latest Google Gemma 3
-    "google/gemma-3-4b-it:free",
-    "google/gemma-3-27b-it:free",
-    "meta-llama/llama-3.3-70b-instruct:free", // Reliable Llama
-    "meta-llama/llama-3.2-3b-instruct:free",
-    "mistralai/pixtral-12b:free",
-    "microsoft/phi-3-medium-128k-instruct:free",
-    "liquid/lfm-2.5-1.2b-instruct:free",
-    "google/gemini-2.0-pro-exp-02-05:free", // Keeping as fallback
-    "google/gemini-2.0-flash-exp:free",
-    "google/gemini-2.0-flash-thinking-exp:free",
-];
-
 export const MODELS = {
-    // Dynamic getter to pick a random model from the free pool
-    get PRO() {
-        return FREE_MODELS[Math.floor(Math.random() * FREE_MODELS.length)];
-    }
+    // Free models in priority order — rotate on failure
+    FREE_MODELS: [
+        "stepfun/step-3.5-flash:free",
+        "qwen/qwen3-coder:free",
+        "google/gemma-3n-e2b-it:free",
+        "deepseek/deepseek-r1:free",
+        "openrouter/free",
+    ] as const,
+    PRO: "stepfun/step-3.5-flash:free" // Primary free model
 } as const;
 
+// --- GOOGLE CONFIGURATION (For Embeddings) ---
+const GOOGLE_KEYS = [
+    process.env.FREE_API_KEY_1,
+    process.env.FREE_API_KEY_2,
+    process.env.FREE_API_KEY_3,
+    process.env.FREE_API_KEY_4,
+    process.env.FREE_API_KEY_5,
+].filter(Boolean) as string[];
+
+// Embedding Model - Google's latest production embedding model
+// "gemini-embedding-001" is the only model available on v1beta with free API keys (3072 dimensions)
+const GOOGLE_EMBEDDING_MODEL = "gemini-embedding-001";
 
 /**
  * Check if error is a rate limit or quota error
@@ -41,7 +44,7 @@ export const MODELS = {
 function isQuotaError(error: unknown): boolean {
     if (!error) return false;
 
-    const errorString = String(error).toLowerCase(); // Better than stringify for Error objects
+    const errorString = String(error).toLowerCase();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const errorJson = typeof error === 'object' ? JSON.stringify(error as any).toLowerCase() : '';
 
@@ -61,7 +64,7 @@ function isQuotaError(error: unknown): boolean {
     const isRateLimit = (
         message.includes('429') ||
         message.includes('rate limit') ||
-        message.includes('quota') || // Catch "quota exceeded", "quota check failed", etc.
+        message.includes('quota') ||
         message.includes('exhausted') ||
         message.includes('too many requests') ||
         errorString.includes('quota') ||
@@ -74,73 +77,65 @@ function isQuotaError(error: unknown): boolean {
     return isRateLimit;
 }
 
-// Retry with model rotation
+// Retry logic with model rotation (Using OpenRouter)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function withRetry<T>(fn: (client: any) => Promise<T>, retries = 3): Promise<T> {
+export async function withRetry<T>(fn: (client: any, modelId: string) => Promise<T>, retries = 3): Promise<T> {
     let lastError: unknown;
+    const models = MODELS.FREE_MODELS;
 
     for (let i = 0; i < retries; i++) {
+        const modelId = models[i % models.length];
         try {
-            // Attempt execution
-            return await fn(openrouter);
+            console.log(`Attempt ${i + 1}: Using model ${modelId}`);
+            return await fn(openrouter, modelId);
         } catch (error) {
             lastError = error;
-            console.warn(`Attempt ${i + 1} failed with model rotation:`, error);
-
-            // If it's a quota error or specific model error, continue to next iteration (which picks new model via getter)
-            // If it's the last retry, throw
+            console.warn(`Attempt ${i + 1} (model: ${modelId}) failed:`, error);
             if (i === retries - 1) break;
-
-            // Add small delay before retry
             await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
         }
     }
-
     throw lastError;
 }
 
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { embed, embedMany } from "ai";
+// Retry logic for Google Embeddings with key rotation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function withGoogleRetry<T>(fn: (provider: any) => Promise<T>, retries = 5): Promise<T> {
+    let lastError: unknown;
+    const keys = GOOGLE_KEYS;
 
-// Pool of Google AI Studio keys for embeddings (Free Tier)
-const GOOGLE_KEYS = [
-    process.env.FREE_API_KEY_1,
-    process.env.FREE_API_KEY_2,
-    process.env.FREE_API_KEY_3,
-    process.env.FREE_API_KEY_4,
-    process.env.FREE_API_KEY_5,
-].filter(Boolean) as string[];
-
-const getRandomGoogleProvider = () => {
-    const apiKey = GOOGLE_KEYS[Math.floor(Math.random() * GOOGLE_KEYS.length)];
-    if (!apiKey) throw new Error("No Google API Keys available for embeddings");
-    return createGoogleGenerativeAI({ apiKey });
-};
+    for (let i = 0; i < Math.min(retries, keys.length); i++) {
+        const apiKey = keys[i]; // Try keys in order
+        const provider = createGoogleGenerativeAI({ apiKey });
+        try {
+            return await fn(provider);
+        } catch (error) {
+            lastError = error;
+            console.warn(`Google API Key ${i + 1} failed:`, error);
+            if (i === keys.length - 1) break;
+            // Short delay before trying next key
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+    }
+    throw lastError;
+}
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-    try {
-        const google = getRandomGoogleProvider();
+    return withGoogleRetry(async (google) => {
         const { embedding } = await embed({
-            model: google.textEmbeddingModel("embedding-001"),
+            model: google.textEmbeddingModel(GOOGLE_EMBEDDING_MODEL),
             value: text,
         });
         return embedding;
-    } catch (error) {
-        console.error("Embedding Error (Single):", error);
-        throw error;
-    }
+    });
 }
 
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-    try {
-        const google = getRandomGoogleProvider();
+    return withGoogleRetry(async (google) => {
         const { embeddings } = await embedMany({
-            model: google.textEmbeddingModel("embedding-001"),
+            model: google.textEmbeddingModel(GOOGLE_EMBEDDING_MODEL),
             values: texts,
         });
         return embeddings;
-    } catch (error) {
-        console.error("Embedding Error (Batch):", error);
-        throw error;
-    }
+    });
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { useParams } from "next/navigation";
 import { Terminal, Send, Github, Activity, User, Bot as BotIcon, HardDrive, Copy, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -34,15 +35,22 @@ export default function PublicBot() {
         fetchProfile();
     }, [username]);
 
-    const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages } = useChat({
-        api: `/api/chat/${username}`,
-        initialMessages: [
-            { id: "boot-1", role: "system", content: `Connected to @${username}` },
-            { id: "boot-2", role: "system", content: "AI Personality Loaded" },
+    const [input, setInput] = useState("");
+
+    const { messages, sendMessage, status, setMessages } = useChat({
+        transport: new DefaultChatTransport({
+            api: `/api/chat/${username}`,
+        }),
+        messages: [
+            { id: "boot-1", role: "system", parts: [{ type: "text", text: `Connected to @${username}` }] },
+            { id: "boot-2", role: "system", parts: [{ type: "text", text: "AI Personality Loaded" }] },
             {
                 id: "intro",
                 role: "assistant",
-                content: `System Online.\n\nI am the AI assistant for @${username}.\n\nAsk me about their:\n- Professional Experience\n- Key Skills & Expertise\n- Projects & Achievements\n- Contact info\n\nHow can I help you today?`
+                parts: [{
+                    type: "text",
+                    text: `System Online.\n\nI am the AI assistant for @${username}.\n\nAsk me about their:\n- Professional Experience\n- Key Skills & Expertise\n- Projects & Achievements\n- Contact info\n\nHow can I help you today?`
+                }]
             }
         ],
         onError: (err: Error) => {
@@ -54,23 +62,55 @@ export default function PublicBot() {
             setMessages((prev: any[]) => {
                 const lastMsg = prev[prev.length - 1];
                 // Check if last message is a system error message
-                if (lastMsg?.role === "system" && lastMsg.content === errorMessage) return prev;
+                const lastMsgText = lastMsg?.parts?.[0]?.text;
+                if (lastMsg?.role === "system" && lastMsgText === errorMessage) return prev;
 
                 return [
                     ...prev,
                     {
                         id: `err-${Date.now()}`,
                         role: "system",
-                        content: `> SYSTEM ALERT: ${errorMessage}`,
-                        parts: [] // Add empty parts to satisfy UIMessage type if required by strict typing
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    } as any
+                        parts: [{ type: "text", text: `> SYSTEM ALERT: ${errorMessage}` }]
+                    }
                 ];
             });
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any) as any;
+    });
 
+    const isLoading = status === "submitted" || status === "streaming";
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getMessageText = (msg: any) => {
+        if (typeof msg.content === 'string' && msg.content.length > 0) return msg.content;
+        if (msg.parts && Array.isArray(msg.parts)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const text = msg.parts
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .filter((p: any) => p.type === 'text')
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .map((p: any) => p.text || '')
+                .join('');
+            if (text) return text;
+        }
+        return "";
+    };
+
+    const handleCustomSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim() || isLoading) return;
+
+        const userMessage = input;
+        setInput(""); // Clear input immediately
+
+        try {
+            await sendMessage({ text: userMessage });
+        } catch (error) {
+            console.error("Failed to send message:", error);
+            // Restore input if failed? Or just show error
+        }
+    };
+
+    // Scroll handling...
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -134,8 +174,8 @@ export default function PublicBot() {
                         >
                             {msg.role === 'system' ? (
                                 <div className="flex items-center gap-3 ml-1">
-                                    <span className={`text-[10px] uppercase tracking-[0.3em] font-black ${msg.content.includes("Notice") ? "text-red-500" : "text-primary/70"}`}>
-                                        {`> ${msg.content}`}
+                                    <span className={`text-[10px] uppercase tracking-[0.3em] font-black ${getMessageText(msg).includes("Notice") ? "text-red-500" : "text-primary/70"}`}>
+                                        {`> ${getMessageText(msg)}`}
                                     </span>
                                 </div>
                             ) : (
@@ -162,7 +202,7 @@ export default function PublicBot() {
                                             </div>
                                         ) : (
                                             <button
-                                                onClick={() => handleCopy(msg.content, msg.id)}
+                                                onClick={() => handleCopy(getMessageText(msg), msg.id)}
                                                 className="absolute -top-3 right-4 px-2 py-1 bg-black border border-white/20 text-[7px] font-black text-white/40 hover:text-primary hover:border-primary/50 uppercase tracking-[0.3em] z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                                             >
                                                 {copiedId === msg.id ? <Check className="w-2 h-2 text-primary" /> : <Copy className="w-2 h-2" />}
@@ -183,9 +223,9 @@ export default function PublicBot() {
                                             <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
                                                 style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "10px 10px" }} />
 
-                                            {msg.content}
+                                            {getMessageText(msg)}
 
-                                            {msg.role === 'assistant' && !msg.content && isLoading && (
+                                            {msg.role === 'assistant' && !getMessageText(msg) && isLoading && (
                                                 <div className="flex gap-1 py-1">
                                                     <div className="w-1 h-3 bg-primary animate-pulse" />
                                                     <div className="w-1 h-3 bg-primary/40 animate-pulse delay-75" />
@@ -204,7 +244,7 @@ export default function PublicBot() {
             {/* Input - Minimal & Functional */}
             <div className="p-4 md:p-8 bg-black z-30">
                 <div className="max-w-4xl mx-auto">
-                    <form onSubmit={handleSubmit} className="relative">
+                    <form onSubmit={handleCustomSubmit} className="relative">
                         <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 text-primary">
                             <Terminal className="w-4 h-4" />
                             <span className="font-bold text-sm">$</span>
@@ -215,7 +255,7 @@ export default function PublicBot() {
                             className="w-full bg-white/[0.02] border border-white/10 py-5 pl-24 pr-16 focus:outline-none focus:border-primary/50 transition-all text-white placeholder:text-white/40 text-base md:text-sm"
                             placeholder="Ask a question..."
                             value={input}
-                            onChange={handleInputChange}
+                            onChange={(e) => setInput(e.target.value)}
                             disabled={isLoading}
                         />
                         <button
@@ -229,7 +269,7 @@ export default function PublicBot() {
 
                     <div className="mt-4 flex items-center justify-between px-2">
                         <div className="flex gap-6">
-                            <span className="text-[10px] text-white/80 font-black uppercase tracking-[0.4em]">Engine: Gemini 2.5 Flash-Lite</span>
+                            {/* <span className="text-[10px] text-white/80 font-black uppercase tracking-[0.4em]">Engine: Gemini 2.5 Flash-Lite</span> */}
                             <span className="text-[10px] text-white/80 font-black uppercase tracking-[0.4em]">Active Profile: @{username}</span>
                         </div>
                         {isLoading && (

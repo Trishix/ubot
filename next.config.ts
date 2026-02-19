@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   serverExternalPackages: ["pdf-parse", "sharp"],
   typescript: {
-    ignoreBuildErrors: true,
+    // ignoreBuildErrors: true, // Removed as build passes
   },
   // Silence warning about multiple lockfiles
   turbopack: {
