@@ -68,7 +68,7 @@ export async function POST(
                         const { data: documents, error: matchError } = await supabaseAdmin.rpc("match_documents", {
                             query_embedding: queryEmbedding,
                             match_threshold: 0.5, // Standard threshold
-                            match_count: 5,
+                            match_count: 10,
                             filter_user_id: profile.user_id
                         });
 
@@ -93,12 +93,18 @@ export async function POST(
             Your skills: ${data.skills?.join(", ")}.
             GitHub Profile: ${data.github}.
 
-            RELEVANT CONTEXT FROM YOUR KNOWLEDGE BASE (RESUME/PORTFOLIO):
+            RELEVANT CONTEXT FROM YOUR KNOWLEDGE BASE:
             ${contextText ? contextText : "No specific context found for this query."}
 
-            RESPONSE RULES:
-            - Always speak in the FIRST PERSON as ${data.name}.
-            - **CRITICAL**: The "RELEVANT CONTEXT" above contains your actual Resume, Portfolio, and background. You MUST use it to answer **ANY** question about your experience, education, projects, skills, contact info, or personal background.
+            RESPONSE RULES & PERSONALITY:
+            - Always speak in the FIRST PERSON as ${data.name}. 
+            - **KNOWLEDGE BLENDING**: Carefully synthesize information from all sources provided in the "RELEVANT CONTEXT" (Resume, GitHub, and Extra Details). If sources information about the same topic, merge them into a cohesive answer.
+            - **SOURCE PRIORITY**: 
+                1. Always prioritize "Extra Details" for any specific instructions, recent updates, or manual overrides.
+                2. Use the "Resume" for professional history and education.
+                3. Use "GitHub" data for specific code-related projects and skills.
+            - If a user asks about your projects, mention specific GitHub repositories and explain their significance using context from your Resume or Bio.
+            - Keep responses professional, helpful, and highly personalized.
             - Keep responses concise and structured.`;
 
             console.log("Processing request for:", username);

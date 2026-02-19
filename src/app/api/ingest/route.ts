@@ -185,25 +185,24 @@ export async function POST(req: Request) {
 
         // Chunk Resume
         if (resumeText) {
-            const chunks = resumeText.split(/\n\s*\n/).filter(c => c.length > 50);
-            chunks.forEach(c => documentsToEmbed.push({ content: c, source: "resume" }));
+            const chunks = resumeText.split(/\n\s*\n/).filter(c => c.length > 50);            chunks.forEach(c => documentsToEmbed.push({ content: `[Source: Resume]\n${c}`, source: "resume" }));
         }
 
         // Chunk GitHub Data
         if (githubData) {
             const chunks = githubData.split('\n').filter(c => c.length > 20);
-            chunks.forEach(c => documentsToEmbed.push({ content: c, source: "github" }));
+            chunks.forEach(c => documentsToEmbed.push({ content: `[Source: GitHub Repository]\n${c}`, source: "github" }));
         }
 
         // Chunk Profile Info
         if (profileInfo) {
-            documentsToEmbed.push({ content: profileInfo, source: "github_profile" });
+            documentsToEmbed.push({ content: `[Source: GitHub Profile]\n${profileInfo}`, source: "github_profile" });
         }
 
         // Chunk Extra Details
         if (extraDetails) {
             const chunks = extraDetails.split(/\n\s*\n/).filter(c => c.length > 10);
-            chunks.forEach(c => documentsToEmbed.push({ content: c, source: "extra_details" }));
+            chunks.forEach(c => documentsToEmbed.push({ content: `[Source: Extra Details/Instructions]\n${c}`, source: "extra_details" }));
         }
 
         console.log(`Generating embeddings for ${documentsToEmbed.length} chunks...`);
