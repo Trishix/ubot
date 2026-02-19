@@ -1,112 +1,68 @@
 # API Quota Management Guide
 
-## 🚨 Current Issue: API Quota Exceeded
+## 🚨 Understanding API Limits
 
-Your Google Gemini API keys have reached their free tier quota limits. This is a temporary limitation that will reset automatically.
-
----
-
-## ⏰ Quick Fix: Wait for Quota Reset
-
-**Free Tier Limits:**
-- **Gemini 2.5 Flash**: 20 requests per minute
-- **Gemini 2.5 Flash-Lite**: Higher limits (cost-efficient)
-- **Daily Quota**: Resets every 24 hours
-
-**What to do:**
-1. Wait 30-60 seconds between bot generation attempts
-2. The quota resets automatically - no action needed
-3. Try again after a few minutes
+UBot uses multiple AI providers to ensure a free and reliable experience. However, free tiers come with strict limits. Below is how we manage them.
 
 ---
 
-## 🔄 How the Key Rotation Works
+## 🔄 1. Google AI (Embeddings Key Rotation)
 
-Your platform automatically rotates between multiple API keys:
+We use Google's `gemini-embedding-001` for vector search. Since the free tier has a per-key quota, we've implemented an **Automatic Key Rotation** system.
 
-```
-FREE_API_KEY_1 → Quota exceeded
-    ↓ (automatic rotation)
-FREE_API_KEY_2 → Quota exceeded
-    ↓
-Error: "All API keys exhausted"
-```
+**How it works:**
+The system checks for "Quota Exceeded" errors (HTTP 429). If detected, it instantly switches to the next available key in your `.env.local`.
 
-**Current Configuration:**
-- ✅ 2 API keys configured
-- ✅ Automatic rotation enabled
-- ✅ Quota error detection working
-
----
-
-## 💡 Solutions
-
-### Option 1: Wait (Free)
-Simply wait for the quota to reset. The free tier is generous for development:
-- **15 requests per minute** (per key)
-- **1,500 requests per day** (per key)
-
-### Option 2: Add More Free Keys (Recommended)
-Create additional Google AI API keys and add them to `.env.local`:
-
+**Configuration:**
+Add up to 5 keys to your environment:
 ```env
-FREE_API_KEY_1=AIzaSy...  # Existing
-FREE_API_KEY_2=AIzaSy...  # Existing
-FREE_API_KEY_3=AIzaSy...  # New key
-FREE_API_KEY_4=AIzaSy...  # New key
+FREE_API_KEY_1=...
+FREE_API_KEY_2=...
+FREE_API_KEY_3=...
+FREE_API_KEY_4=...
+FREE_API_KEY_5=...
 ```
-
-**How to get more keys:**
-1. Visit: https://aistudio.google.com/apikey
-2. Create a new project
-3. Generate a new API key
-4. Add to `.env.local`
-
-### Option 3: Upgrade to Paid Tier
-For production use, upgrade to Google AI's paid tier:
-- **Higher rate limits**
-- **No daily quotas**
-- **Priority support**
-
-Visit: https://ai.google.dev/pricing
 
 ---
 
-## 🛠️ Technical Details
+## 💬 2. OpenRouter (Chat & Persona Rotation)
 
-### Error Detection
-The system detects quota errors through:
-```typescript
-- HTTP 429 status codes
-- "quota exceeded" in error messages
-- "rate limit" keywords
-```
+For chat responses and persona generation, we use **OpenRouter**. Since individual free models can be slow or rate-limited, we use a **Model Rotation** strategy.
 
-### Automatic Retry Logic
-```typescript
-withRetry() → Tries all available API keys
-    ↓
-    If all fail → Returns user-friendly error
-```
+**The Rotation Order:**
+1.  **Step-3.5-Flash** (Primary)
+2.  **Qwen 3 Coder** (Fallback 1)
+3.  **Gemma 3** (Fallback 2)
+4.  **DeepSeek R1** (Fallback 3)
+5.  **OpenRouter Free Pool** (Final Fallback)
 
-### Current Models in Use
-- **Ingest API**: `gemini-2.5-flash` (complex reasoning)
-- **Chat API**: `gemini-2.5-flash-lite` (fast responses)
+If one model fails or times out, the system automatically tries the next one in the list.
 
 ---
 
-## 📊 Monitoring Your Usage
+## 🛠️ Common Issues & Fixes
 
-Track your API usage at:
-- https://ai.dev/rate-limit
-- https://aistudio.google.com/app/apikey
+### "Quota Exceeded" or "Rate Limit"
+*   **Cause**: You've hit the limit for your current pool of keys.
+*   **Fix**: 
+    1.  Wait 1-2 minutes for the "Requests Per Minute" (RPM) to reset.
+    2.  Add more Google API keys to your `.env.local` (we support up to 5).
+    3.  Check if your `OPENROUTER_API_KEY` has credits (or is correctly set for free models).
+
+### "504 Gateway Timeout" (Vercel Only)
+*   **Cause**: Vercel Free tier has a strict **10-second** timeout for API routes. Ingestion (which involves PDF parsing + 20+ embedding calls) often takes 30-50 seconds.
+*   **Fix**: 
+    1.  Run the application locally for ingestion (where there is no timeout).
+    2.  Alternatively, upgrade to Vercel Pro which supports 300s timeouts.
 
 ---
 
-## ✅ Next Steps
+## 📈 Monitoring Usage
 
-1. **Immediate**: Wait 5-10 minutes for quota reset
-2. **Short-term**: Add 2-3 more free API keys
-3. **Long-term**: Consider paid tier for production
+Track your limits here:
+*   **Google AI Studio**: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+*   **OpenRouter Dashboard**: [https://openrouter.ai/activity](https://openrouter.ai/activity)
 
-The platform is working correctly - this is just a temporary quota limitation from Google's free tier.
+---
+
+The platform is designed to be as resilient as possible within free-tier constraints. Adding more keys is the most effective way to improve reliability.

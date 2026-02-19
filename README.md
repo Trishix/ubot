@@ -1,4 +1,4 @@
-
+# UBOT
 
 **UBOT** is an intelligent platform that lets you clone your professional identity into an AI chatbot. It digests your Resume (PDF) and GitHub profile to create a conversational agent that speaks for you, answers recruiters' questions, and showcases your skills—24/7.
 
@@ -10,20 +10,23 @@
 *   **Input**: You upload a **PDF Resume** and optionally provide a **GitHub username**.
 *   **Parsing**:
     *   `pdf-parse` extracts text from your resume.
-    *   GitHub API fetches your pinned repositories, languages, and bio.
+    *   GitHub API fetches your profile, pinned repositories, and bio.
 *   **Persona Generation**:
-    *   Google Gemini (Flash/Lite) analyzes this raw data to build a structured JSON profile (Bio, Role, Skills, etc.).
+    *   **OpenRouter** (rotating through free models like `Step-3.5-Flash` and `Qwen 3`) analyzes this raw data to build a structured JSON profile.
 *   **Vector Embeddings (RAG)**:
-    *   **Local Embeddings**: We use **@xenova/transformers** (`all-mpnet-base-v2`) to generate high-quality vector embeddings of your data locally on the server.
-    *   *Why Local?* This avoids external API rate limits and quotas for embeddings, making ingestion free and fast.
+    *   **Google Gemini Embeddings**: We use `gemini-embedding-001` (3072 dimensions) for high-accuracy semantic search.
+    *   **Key Rotation**: To bypass free-tier quota limits, the system automatically rotates through up to **5 Google API keys**.
     *   Vectors are stored in **Supabase** (PostgreSQL + `pgvector`).
+*   **Source Attribution**:
+    *   All ingested data is transparently tagged (e.g., `[Source: Resume]`, `[Source: GitHub]`) so the bot knows where its knowledge comes from.
 
 ### 2. **The Chat Experience**
 *   **Retrieval Augmented Generation (RAG)**:
-    *   When a user asks a question, we generate an embedding for their query (using Xenova).
-    *   We perform a **semantic search** in Supabase to find the most relevant chunks of your resume and GitHub data.
+    *   When a user asks a question, we generate a 3072-dim embedding for their query using rotated Google keys.
+    *   We perform a **semantic search** in Supabase retrieving up to 10 context chunks for breadth.
 *   **Response Generation**:
-    *   The relevant context is fed into **Google Gemini**, which answers in the first person ("I built...", "My experience...").
+    *   The relevant context is fed into **OpenRouter**, which answers in the first person ("I built...", "My experience...").
+    *   The system includes model rotation to ensure responses are delivered even if specific free models are timing out.
 
 ---
 
@@ -31,24 +34,12 @@
 
 | Component | Technology | Description |
 | :--- | :--- | :--- |
-| **Framework** | **Next.js 16** | App Router, Server Actions, React Server Components. |
-| **Language** | **TypeScript** | Full type safety across API and UI. |
-| **Database** | **Supabase** | PostgreSQL for data, **pgvector** for RAG, and Authentication. |
-| **LLM Inference** | **Google Gemini** | `gemini-2.5-flash-lite` for fast, intelligent responses. |
-| **Embeddings** | **Xenova** | `@xenova/transformers` running `all-mpnet-base-v2` locally. |
-| **Styling** | **Tailwind CSS** | Custom "Terminal/Hacker" design system. |
+| **Framework** | **Next.js 16** | App Router, Server Components. |
+| **LLM Inference** | **OpenRouter** | Rotating free models (`Step-3.5-Flash`, `Qwen 3`, `DeepSeek`) for high reliability. |
+| **Embeddings** | **Google AI** | `gemini-embedding-001` (3072 dims) with multi-key rotation. |
+| **Database** | **Supabase** | PostgreSQL + `pgvector` for storage and semantic search. |
+| **Styling** | **Vanilla CSS** | Modern "Terminal/Hacker" glassmorphism aesthetic. |
 | **Email** | **Resend** | Transactional emails for contact forms. |
-
----
-
-## 🚀 Key Features
-
-*   **📄 PDF Resume RAG**: Upload your CV, and the bot learns every detail—from work history to soft skills.
-*   **🐙 GitHub Integration**: Auto-syncs your top repos to answer technical questions about your code.
-*   **⚡ CV-Only Mode**: Don't have active GitHub? No problem. Create a bot with just your Resume.
-*   **🔋 Dual-Input**: Use both sources for the ultimate "Career Twin".
-*   **🖥️ Terminal UI**: A distinct, immersive aesthetic that stands out from generic chat interfaces.
-*   **🔗 Custom Handle**: Get a unique link (e.g., `ubot.com/chat/yourname`) to share with recruiters.
 
 ---
 
@@ -57,7 +48,8 @@
 ### Prerequisites
 *   Node.js 20+
 *   Supabase Account (with `vector` extension enabled)
-*   Google AI Studio Key (Free tier works!)
+*   **OpenRouter API Key**
+*   **Google AI Studio Keys** (Free tier works! Get multiple for rotation)
 
 ### Installation
 
@@ -69,24 +61,30 @@
     ```
 
 2.  **Environment Setup**
-    Create `.env.local` with the following:
+    Create `.env.local`:
     ```bash
     # Supabase
-    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+    NEXT_PUBLIC_SUPABASE_URL=...
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+    SUPABASE_SERVICE_ROLE_KEY=...
 
-    # Google Gemini
-    GOOGLE_API_KEY=your_gemini_key
-    # Optional: Multiple keys for rotation to avoid rate limits
-    FREE_API_KEY_1=another_key
+    # OpenRouter (Chat & Persona)
+    OPENROUTER_API_KEY=...
+    NEXT_PUBLIC_SITE_URL=https://your-domain.vercel.app
 
-    # GitHub (Optional but recommended for higher limits)
-    GITHUB_TOKEN=your_github_token
+    # Google (Embeddings Key Rotation)
+    FREE_API_KEY_1=...
+    FREE_API_KEY_2=...
+    FREE_API_KEY_3=...
+    FREE_API_KEY_4=...
+    FREE_API_KEY_5=...
+
+    # Resend (Contact Form)
+    RESEND_API_KEY=...
     ```
 
 3.  **Database Setup (SQL)**
-    Run this in your Supabase SQL Editor:
+    Run this in your **Supabase SQL Editor**:
     ```sql
     -- Enable Vector Extension
     create extension if not exists vector;
@@ -96,13 +94,13 @@
       id bigserial primary key,
       content text,
       metadata jsonb,
-      embedding vector(768), -- Matches Xenova mpnet-base-v2 dimensions
+      embedding vector(3072), -- Matches gemini-embedding-001 dimensions
       user_id uuid references auth.users not null
     );
 
     -- Search Function
     create or replace function match_documents (
-      query_embedding vector(768),
+      query_embedding vector(3072),
       match_threshold float,
       match_count int,
       filter_user_id uuid
