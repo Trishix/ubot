@@ -2,9 +2,11 @@
 
 **UBOT** is an intelligent platform that lets you clone your professional identity into an AI chatbot. It digests your Resume (PDF) and GitHub profile to create a conversational agent that speaks for you, answers recruiters' questions, and showcases your skills—24/7.
 
-![UBOT Terminal Interface]()
-<img width="1512" height="982" alt="Screenshot 2026-02-19 at 8 24 33 PM" src="https://github.com/user-attachments/assets/acb8d604-0717-44c3-a8d6-818a94c1d489" />
-<img width="1512" height="971" alt="Screenshot 2026-02-19 at 8 24 53 PM" src="https://github.com/user-attachments/assets/ad8c58d8-de8b-41dc-b99a-da6cf3890bc3" />
+**UBOT Terminal Interface**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/acb8d604-0717-44c3-a8d6-818a94c1d489" width="48%" alt="UBOT Terminal Interface" />
+  <img src="https://github.com/user-attachments/assets/ad8c58d8-de8b-41dc-b99a-da6cf3890bc3" width="48%" alt="UBOT Analytics/Settings" />
+</div>
 
 ## 🧠 How It Works
 
