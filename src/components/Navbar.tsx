@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Terminal as TerminalIcon, Menu, X, User } from "lucide-react";
+import Image from "next/image";
+import { Menu, X, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -36,7 +37,7 @@ export default function Navbar() {
             aria-label="Main navigation"
         >
             <Link href="/" className="flex items-center gap-2 group" aria-label="UBOT — go to homepage">
-                <TerminalIcon className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <Image src="/logoubot.jpg" alt="UBOT logo" width={36} height={36} className="rounded-sm group-hover:scale-110 transition-transform" />
                 <span className="font-black tracking-tighter text-xl text-white">UBOT</span>
             </Link>
 

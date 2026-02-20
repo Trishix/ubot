@@ -85,10 +85,6 @@ export default function DocumentationPage() {
                                 <span className="text-xl font-black text-primary italic">50</span>
                                 <span className="block text-[10px] text-white/80 uppercase tracking-widest mt-1 font-black">REQS / HOUR</span>
                             </div>
-                            <div className="flex-1 p-4 border border-white/10 text-center">
-                                <span className="text-xl font-black text-white italic">12ms</span>
-                                <span className="block text-[10px] text-white/80 uppercase tracking-widest mt-1 font-black">LATENCY</span>
-                            </div>
                         </div>
                     </div>
                 </section>

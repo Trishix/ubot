@@ -31,7 +31,7 @@ export default function AboutPage() {
                         <div className="space-y-4">
                             <h3 className="text-3xl font-black text-white uppercase italic">Trishit <span className="text-primary">Swarnakar</span></h3>
                             <p className="text-white/90 text-sm leading-relaxed">
-                                Full-stack developer and AI architect focused on creating high-performance digital identities. Specialized in building low-latency interfaces that bridge the gap between code and conversation.
+                                Full-stack developer and AI architect focused on creating high-performance digital identities. Specialized in building intelligent interfaces that bridge the gap between code and conversation.
                             </p>
                         </div>
 

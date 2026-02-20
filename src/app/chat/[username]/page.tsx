@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useParams } from "next/navigation";
-import { Terminal, Send, Github, Activity, User, Bot as BotIcon, HardDrive, Copy, Check } from "lucide-react";
+import { Terminal, Send, Github, Activity, User, HardDrive, Copy, Check } from "lucide-react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
@@ -209,7 +210,7 @@ export default function PublicBot() {
             <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-8 bg-black z-30">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <BotIcon className="w-4 h-4 text-primary" aria-hidden="true" />
+                        <Image src="/logoubot.jpg" alt="UBOT logo" width={28} height={28} className="rounded-sm" />
                         <h1 className="text-xs font-black text-white uppercase tracking-widest">
                             {profile?.name || username}
                         </h1>

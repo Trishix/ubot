@@ -71,8 +71,8 @@ export default function LandingPage() {
                 desc: "Build knowledge directly from your public repositories and contributions."
               },
               {
-                title: "12ms Latency",
-                desc: "Engineered for speed with a minimalist terminal-based conversation interface."
+                title: "AI Persona",
+                desc: "A conversational AI that accurately represents your skills, experience, and professional identity."
               },
               {
                 title: "Personal Handle",
