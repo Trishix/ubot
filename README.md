@@ -31,6 +31,8 @@
 *   **Response Generation**:
     *   The relevant context is fed into **OpenRouter**, which answers in the first person ("I built...", "My experience...").
     *   The system includes model rotation to ensure responses are delivered even if specific free models are timing out.
+*   **Markdown Rendering**:
+    *   AI responses render **bold**, *italic*, `inline code`, bullet points, headings, and [links](url) as formatted text — not raw markdown.
 
 ---
 
@@ -42,8 +44,24 @@
 | **LLM Inference** | **OpenRouter** | Rotating free models (`Step-3.5-Flash`, `Qwen 3`, `DeepSeek`) for high reliability. |
 | **Embeddings** | **Google AI** | `gemini-embedding-001` (3072 dims) with multi-key rotation. |
 | **Database** | **Supabase** | PostgreSQL + `pgvector` for storage and semantic search. |
-| **Styling** | **Vanilla CSS** | Modern "Terminal/Hacker" glassmorphism aesthetic. |
+| **Styling** | **Tailwind CSS v4** | Terminal/hacker glassmorphism aesthetic with CRT overlay effect. |
+| **Auth** | **Supabase Auth** | Email/password and Google OAuth with session management. |
 | **Email** | **Resend** | Transactional emails for contact forms. |
+
+---
+
+## ♿ Accessibility & UI/UX
+
+UBOT follows industry-standard UI/UX best practices:
+
+*   **Focus States**: Visible green focus rings on all interactive elements via `focus-visible`.
+*   **Keyboard Navigation**: Skip-to-content link, `aria-expanded` on toggles, `role="menu"` on mobile nav.
+*   **Forms**: All labels paired with inputs (`htmlFor`/`id`), required-field asterisks, `autoComplete` attributes.
+*   **Semantic HTML**: `<section>`, `<aside>`, `<main>`, `role="log"`, `role="alert"`, `aria-live` regions.
+*   **Error States**: Icon + colored background + actionable text (not color-only).
+*   **Typography**: 16px body base, 1.6 line-height, minimum 14px for all visible text.
+*   **Tap Targets**: All buttons and links meet 44×44px minimum for mobile.
+*   **External Links**: `rel="noopener noreferrer"` on all external links.
 
 ---
 
@@ -59,7 +77,7 @@
 
 1.  **Clone & Install**
     ```bash
-    git clone https://github.com/yourusername/ubot.git
+    git clone https://github.com/Trishix/ubot.git
     cd ubot
     npm install
     ```

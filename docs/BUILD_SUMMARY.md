@@ -25,6 +25,11 @@
 - **Implementation**: Added Source Tags (`[Source: Resume]`, etc.) to chunks and increased retrieval depth to 10 chunks.
 - **Impact**: Bot provides better attributed and more detailed answers.
 
+#### 5. **UI/UX Audit & Accessibility**
+- **Feature**: Comprehensive UI/UX improvements across all pages.
+- **Implementation**: Added focus-visible states, semantic HTML (`<section>`, `role="log"`, `aria-live`), form label pairing (`htmlFor`/`id`), required-field indicators, error icons, skip-to-content link, 44px+ tap targets, and markdown rendering in chat.
+- **Impact**: WCAG-aligned accessibility, improved keyboard navigation, and better readability.
+
 ---
 
 ## 📦 Current Build Status
@@ -34,16 +39,27 @@
 ✓ TypeScript validation passed
 ✓ 3072-dimension Vector Schema implemented
 ✓ AI Failover System active
+✓ Accessibility audit applied
 ```
 
 ### Route Map
 ```
 ○  /                      → Landing page
+○  /about                 → About / Founder page
+○  /contact               → Contact form
+○  /docs                  → API integration docs
 ○  /auth/login            → Login page
+○  /auth/register         → Registration page
 ○  /dashboard             → User dashboard
 ƒ  /chat/[username]       → Public bot chat interface
-ƒ  /api/chat/[username]   → Chat API endpoint (RAG Optimized)
+ƒ  /api/chat/[username]   → Chat API endpoint (RAG)
 ƒ  /api/ingest            → Bot generation (Multi-key rotation)
+ƒ  /api/profile           → Profile CRUD
+ƒ  /api/check-username    → Username availability check
+ƒ  /api/contact           → Contact form handler
+ƒ  /auth/callback         → OAuth callback
+○  /sitemap.xml           → SEO sitemap
+○  /robots.txt            → Robots config
 ```
 
 ---
@@ -55,7 +71,8 @@
 - **Chat Engine**: OpenRouter (Rotating Free Models)
 - **Embeddings**: Google AI (gemini-embedding-001)
 - **Database**: Supabase (PostgreSQL + pgvector)
-- **Styling**: Vanilla CSS (Modern Terminal Aesthetic)
+- **Auth**: Supabase Auth (Email/Password + Google OAuth)
+- **Styling**: Tailwind CSS v4 (Terminal Aesthetic + CRT Effect)
 
 ### Environment Variables Required
 ```env
@@ -71,4 +88,4 @@ RESEND_API_KEY=...
 
 ## 🚀 Ready for Deployment
 
-The application is now technically stable and optimized for high-quality professional cloning.
+The application is now technically stable, accessible, and optimized for high-quality professional cloning.
