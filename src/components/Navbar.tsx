@@ -31,8 +31,11 @@ export default function Navbar() {
     ];
 
     return (
-        <nav className="fixed top-0 left-0 right-0 h-16 border-b border-white/5 flex items-center justify-between px-8 z-50 bg-black/50 backdrop-blur-md font-mono">
-            <Link href="/" className="flex items-center gap-2 group">
+        <nav
+            className="fixed top-0 left-0 right-0 h-16 border-b border-white/5 flex items-center justify-between px-8 z-50 bg-black/50 backdrop-blur-md font-mono"
+            aria-label="Main navigation"
+        >
+            <Link href="/" className="flex items-center gap-2 group" aria-label="UBOT — go to homepage">
                 <TerminalIcon className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                 <span className="font-black tracking-tighter text-xl text-white">UBOT</span>
             </Link>
@@ -43,8 +46,11 @@ export default function Navbar() {
                     <Link
                         key={link.name}
                         href={link.href}
-                        className={`hover:text-primary transition-colors ${pathname === link.href ? "text-primary font-black" : "text-white/90"
+                        className={`hover:text-primary transition-colors py-1 ${pathname === link.href
+                            ? "text-primary font-black border-b-2 border-primary"
+                            : "text-white/90 border-b-2 border-transparent"
                             }`}
+                        aria-current={pathname === link.href ? "page" : undefined}
                     >
                         {link.name}
                     </Link>
@@ -53,17 +59,18 @@ export default function Navbar() {
                 {user ? (
                     <Link
                         href="/dashboard"
-                        className="px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-black transition-all font-black flex items-center gap-2"
+                        className="px-5 py-2.5 border border-primary text-primary hover:bg-primary hover:text-black transition-all font-black flex items-center gap-2 min-h-[44px]"
+                        aria-current={pathname === "/dashboard" ? "page" : undefined}
                     >
                         <User className="w-3 h-3" />
                         Dashboard
                     </Link>
                 ) : (
                     <div className="flex items-center gap-4">
-                        <Link href="/auth/login" className="text-white/90 hover:text-primary transition-colors">Login</Link>
+                        <Link href="/auth/login" className="text-white/90 hover:text-primary transition-colors py-2">Login</Link>
                         <Link
                             href="/auth/register"
-                            className="px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-black transition-all font-black"
+                            className="px-5 py-2.5 border border-primary text-primary hover:bg-primary hover:text-black transition-all font-black min-h-[44px] flex items-center"
                         >
                             Sign Up
                         </Link>
@@ -73,32 +80,42 @@ export default function Navbar() {
 
             {/* Mobile Menu Toggle */}
             <button
-                className="md:hidden text-white"
+                className="md:hidden text-white min-w-[44px] min-h-[44px] flex items-center justify-center"
                 onClick={() => setIsOpen(!isOpen)}
+                aria-expanded={isOpen}
+                aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
             >
                 {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
             {/* Mobile Menu */}
             {isOpen && (
-                <div className="absolute top-16 left-0 right-0 bg-black border-b border-white/5 p-8 flex flex-col gap-6 md:hidden z-40">
+                <div
+                    className="absolute top-16 left-0 right-0 bg-black border-b border-white/5 p-8 flex flex-col gap-2 md:hidden z-40"
+                    role="menu"
+                >
                     {navLinks.map((link) => (
                         <Link
                             key={link.name}
                             href={link.href}
                             onClick={() => setIsOpen(false)}
-                            className={`text-xs uppercase tracking-[0.2em] ${pathname === link.href ? "text-primary font-black" : "text-white/70"
+                            role="menuitem"
+                            aria-current={pathname === link.href ? "page" : undefined}
+                            className={`text-xs uppercase tracking-[0.2em] py-3 px-2 min-h-[44px] flex items-center ${pathname === link.href
+                                ? "text-primary font-black border-l-2 border-primary pl-4"
+                                : "text-white/70 border-l-2 border-transparent"
                                 }`}
                         >
                             {link.name}
                         </Link>
                     ))}
-                    <div className="h-[1px] bg-white/5" />
+                    <div className="h-[1px] bg-white/5 my-2" />
                     {user ? (
                         <Link
                             href="/dashboard"
                             onClick={() => setIsOpen(false)}
-                            className="w-full py-4 border border-primary text-primary flex items-center justify-center font-black uppercase text-xs tracking-widest gap-2"
+                            role="menuitem"
+                            className="w-full py-4 border border-primary text-primary flex items-center justify-center font-black uppercase text-xs tracking-widest gap-2 min-h-[44px]"
                         >
                             <User className="w-3 h-3" />
                             Dashboard
@@ -108,14 +125,16 @@ export default function Navbar() {
                             <Link
                                 href="/auth/login"
                                 onClick={() => setIsOpen(false)}
-                                className="w-full py-4 text-white/70 flex items-center justify-center uppercase text-xs tracking-widest"
+                                role="menuitem"
+                                className="w-full py-4 text-white/70 flex items-center justify-center uppercase text-xs tracking-widest min-h-[44px]"
                             >
                                 Login
                             </Link>
                             <Link
                                 href="/auth/register"
                                 onClick={() => setIsOpen(false)}
-                                className="w-full py-4 border border-primary text-primary flex items-center justify-center font-black uppercase text-xs tracking-widest"
+                                role="menuitem"
+                                className="w-full py-4 border border-primary text-primary flex items-center justify-center font-black uppercase text-xs tracking-widest min-h-[44px]"
                             >
                                 Sign Up
                             </Link>

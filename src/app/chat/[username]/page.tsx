@@ -106,7 +106,6 @@ export default function PublicBot() {
             await sendMessage({ text: userMessage });
         } catch (error) {
             console.error("Failed to send message:", error);
-            // Restore input if failed? Or just show error
         }
     };
 
@@ -131,15 +130,15 @@ export default function PublicBot() {
             <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-8 bg-black z-30">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <BotIcon className="w-4 h-4 text-primary" />
-                        <h1 className="text-[10px] font-black text-white uppercase tracking-widest">
+                        <BotIcon className="w-4 h-4 text-primary" aria-hidden="true" />
+                        <h1 className="text-xs font-black text-white uppercase tracking-widest">
                             {profile?.name || username}
                         </h1>
                     </div>
-                    <div className="h-4 w-[1px] bg-white/5" />
+                    <div className="h-4 w-[1px] bg-white/5" aria-hidden="true" />
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        <div className="flex items-center gap-2" role="status" aria-label="Bot status">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
                             <span className="text-[10px] text-white uppercase tracking-[0.2em] font-black">Online</span>
                         </div>
                     </div>
@@ -147,11 +146,17 @@ export default function PublicBot() {
 
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2 text-white/50">
-                        <Activity className="w-3 h-3 text-primary" />
+                        <Activity className="w-3 h-3 text-primary" aria-hidden="true" />
                         <span className="text-[10px] font-black uppercase tracking-widest">Live</span>
                     </div>
                     {profile?.github && (
-                        <a href={profile.github} target="_blank" rel="noopener noreferrer" className="text-white hover:text-primary transition-colors">
+                        <a
+                            href={profile.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-primary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                            aria-label={`Visit ${profile?.name || username}'s GitHub profile`}
+                        >
                             <Github className="w-4 h-4" />
                         </a>
                     )}
@@ -162,6 +167,9 @@ export default function PublicBot() {
             <div
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto px-4 md:px-8 py-10 flex flex-col gap-8 max-w-4xl mx-auto w-full scrollbar-none"
+                role="log"
+                aria-label="Chat conversation"
+                aria-live="polite"
             >
                 <AnimatePresence initial={false}>
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -184,11 +192,11 @@ export default function PublicBot() {
                                         {msg.role === 'user' ? (
                                             <>
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-white/90">You</span>
-                                                <User className="w-3 h-3 text-white/90" />
+                                                <User className="w-3 h-3 text-white/90" aria-hidden="true" />
                                             </>
                                         ) : (
                                             <>
-                                                <HardDrive className="w-3 h-3 text-primary" />
+                                                <HardDrive className="w-3 h-3 text-primary" aria-hidden="true" />
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary">@{username}</span>
                                             </>
                                         )}
@@ -196,14 +204,15 @@ export default function PublicBot() {
                                     <div className={`relative group max-w-full ${msg.role === 'user' ? 'min-w-[200px]' : ''}`}>
                                         {/* Status Tag for User Messages */}
                                         {msg.role === 'user' ? (
-                                            <div className="absolute -top-3 right-4 px-2 py-1 bg-black border border-primary/50 text-[7px] font-black text-primary uppercase tracking-[0.3em] z-10 flex items-center gap-1.5">
+                                            <div className="absolute -top-3 right-4 px-2 py-1 bg-black border border-primary/50 text-[7px] font-black text-primary uppercase tracking-[0.3em] z-10 flex items-center gap-1.5" aria-hidden="true">
                                                 <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
                                                 Message Sent
                                             </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleCopy(getMessageText(msg), msg.id)}
-                                                className="absolute -top-3 right-4 px-2 py-1 bg-black border border-white/20 text-[7px] font-black text-white/40 hover:text-primary hover:border-primary/50 uppercase tracking-[0.3em] z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                                                className="absolute -top-3 right-4 px-2 py-1 bg-black border border-white/20 text-[7px] font-black text-white/40 hover:text-primary hover:border-primary/50 uppercase tracking-[0.3em] z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all cursor-pointer min-h-[28px]"
+                                                aria-label={copiedId === msg.id ? "Response copied" : "Copy AI response"}
                                             >
                                                 {copiedId === msg.id ? <Check className="w-2 h-2 text-primary" /> : <Copy className="w-2 h-2" />}
                                                 {copiedId === msg.id ? "COPIED" : "COPY RESPONSE"}
@@ -220,13 +229,13 @@ export default function PublicBot() {
                                             }}
                                         >
                                             {/* Technical Grid Background */}
-                                            <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
+                                            <div className="absolute inset-0 opacity-[0.02] pointer-events-none" aria-hidden="true"
                                                 style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "10px 10px" }} />
 
                                             {getMessageText(msg)}
 
                                             {msg.role === 'assistant' && !getMessageText(msg) && isLoading && (
-                                                <div className="flex gap-1 py-1">
+                                                <div className="flex gap-1 py-1" role="status" aria-label="AI is typing">
                                                     <div className="w-1 h-3 bg-primary animate-pulse" />
                                                     <div className="w-1 h-3 bg-primary/40 animate-pulse delay-75" />
                                                     <div className="w-1 h-3 bg-primary/10 animate-pulse delay-150" />
@@ -244,24 +253,26 @@ export default function PublicBot() {
             {/* Input - Minimal & Functional */}
             <div className="p-4 md:p-8 bg-black z-30">
                 <div className="max-w-4xl mx-auto">
-                    <form onSubmit={handleCustomSubmit} className="relative">
-                        <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 text-primary">
+                    <form onSubmit={handleCustomSubmit} className="relative" aria-label="Send a message">
+                        <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 text-primary" aria-hidden="true">
                             <Terminal className="w-4 h-4" />
                             <span className="font-bold text-sm">$</span>
                         </div>
                         <input
                             type="text"
                             autoFocus
-                            className="w-full bg-white/[0.02] border border-white/10 py-5 pl-24 pr-16 focus:outline-none focus:border-primary/50 transition-all text-white placeholder:text-white/40 text-base md:text-sm"
+                            className="w-full bg-white/[0.02] border border-white/10 py-5 pl-24 pr-16 focus:border-primary/50 transition-all text-white placeholder:text-white/40 text-base md:text-sm min-h-[48px]"
                             placeholder="Ask a question..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             disabled={isLoading}
+                            aria-label="Type your message"
                         />
                         <button
                             type="submit"
                             disabled={isLoading || !input.trim()}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white text-black hover:bg-primary transition-all flex items-center justify-center disabled:opacity-0 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white text-black hover:bg-primary transition-all flex items-center justify-center disabled:opacity-0 shadow-[0_0_15px_rgba(255,255,255,0.1)] min-w-[44px] min-h-[44px]"
+                            aria-label="Send message"
                         >
                             <Send className="w-4 h-4" />
                         </button>
@@ -269,11 +280,10 @@ export default function PublicBot() {
 
                     <div className="mt-4 flex items-center justify-between px-2">
                         <div className="flex gap-6">
-                            {/* <span className="text-[10px] text-white/80 font-black uppercase tracking-[0.4em]">Engine: Gemini 2.5 Flash-Lite</span> */}
                             <span className="text-[10px] text-white/80 font-black uppercase tracking-[0.4em]">Active Profile: @{username}</span>
                         </div>
                         {isLoading && (
-                            <span className="text-[10px] text-primary/70 font-black uppercase tracking-[0.4em] animate-pulse">
+                            <span className="text-[10px] text-primary/70 font-black uppercase tracking-[0.4em] animate-pulse" role="status">
                                 @{username} is thinking...
                             </span>
                         )}

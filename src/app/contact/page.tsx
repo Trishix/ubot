@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Send, Terminal as TerminalIcon, ShieldCheck, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, Send, Terminal as TerminalIcon, ShieldCheck, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ContactPage() {
@@ -38,29 +38,29 @@ export default function ContactPage() {
     return (
         <main className="min-h-screen bg-black pt-32 pb-20 px-6 font-mono relative">
             {/* Background Grid Accent */}
-            <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
+            <div className="absolute inset-0 opacity-[0.02] pointer-events-none" aria-hidden="true"
                 style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "30px 30px" }} />
 
             <div className="max-w-4xl mx-auto space-y-20 relative z-10">
                 {/* Header */}
-                <div className="space-y-4">
+                <section className="space-y-4" aria-label="Contact header">
                     <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-primary" />
+                        <Mail className="w-4 h-4 text-primary" aria-hidden="true" />
                         <span className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">Contact Us</span>
                     </div>
                     <h1 className="text-5xl md:text-7xl font-black text-white uppercase italic tracking-tighter leading-none">
                         Establish <span className="text-primary">Contact</span>
                     </h1>
-                    <p className="text-white/90 text-sm md:text-base max-w-2xl leading-relaxed uppercase">
+                    <p className="text-white/90 text-base max-w-2xl leading-relaxed">
                         Our support team is here to help with any questions or feedback. We&apos;ll get back to you within 24-48 hours.
                     </p>
-                </div>
+                </section>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
                     {/* Sidebar Info */}
-                    <div className="space-y-12">
+                    <aside className="space-y-12">
                         <div className="space-y-8">
-                            <h2 className="text-[11px] font-black text-white uppercase tracking-[0.5em]">Direct Links</h2>
+                            <h2 className="text-xs font-black text-white uppercase tracking-[0.5em]">Direct Links</h2>
                             <div className="space-y-6">
                                 <div className="group cursor-pointer">
                                     <span className="block text-[10px] text-primary uppercase tracking-widest mb-1 font-black group-hover:text-white transition-colors">Email</span>
@@ -69,7 +69,7 @@ export default function ContactPage() {
                                 <div className="group cursor-pointer">
                                     <span className="block text-[10px] text-primary uppercase tracking-widest mb-1 font-black group-hover:text-white transition-colors">System Status</span>
                                     <div className="text-sm text-white font-black uppercase tracking-tight flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
                                         All Systems Live
                                     </div>
                                 </div>
@@ -77,13 +77,13 @@ export default function ContactPage() {
                         </div>
 
                         <div className="p-8 border border-white/10 bg-white/[0.02] space-y-4 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 blur-3xl rounded-full" />
-                            <ShieldCheck className="w-5 h-5 text-primary" />
-                            <p className="text-[10px] text-white/90 uppercase leading-relaxed font-black">
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 blur-3xl rounded-full" aria-hidden="true" />
+                            <ShieldCheck className="w-5 h-5 text-primary" aria-hidden="true" />
+                            <p className="text-xs text-white/90 leading-relaxed">
                                 Your message is encrypted for secure delivery to our command center.
                             </p>
                         </div>
-                    </div>
+                    </aside>
 
                     {/* Form Area */}
                     <div className="md:col-span-2">
@@ -93,17 +93,18 @@ export default function ContactPage() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className="h-full flex flex-col items-center justify-center p-12 border border-primary/20 bg-primary/[0.02] text-center space-y-6"
+                                    role="alert"
                                 >
-                                    <CheckCircle2 className="w-12 h-12 text-primary" />
+                                    <CheckCircle2 className="w-12 h-12 text-primary" aria-hidden="true" />
                                     <div className="space-y-2">
                                         <h3 className="text-xl font-black text-white uppercase italic">Message Sent</h3>
-                                        <p className="text-[11px] text-white/80 uppercase tracking-widest leading-relaxed font-black">
+                                        <p className="text-sm text-white/80 leading-relaxed">
                                             We&apos;ve received your message and will respond as soon as possible.
                                         </p>
                                     </div>
                                     <button
                                         onClick={() => setStatus("idle")}
-                                        className="text-[11px] text-primary font-black uppercase tracking-[0.3em] hover:text-white hover:underline transition-all"
+                                        className="text-sm text-primary font-black uppercase tracking-[0.3em] hover:text-white hover:underline transition-all min-h-[44px] px-4"
                                     >
                                         [ Send Another Message ]
                                     </button>
@@ -112,25 +113,28 @@ export default function ContactPage() {
                                 <motion.form
                                     onSubmit={handleSubmit}
                                     className="space-y-8"
+                                    aria-label="Contact form"
                                 >
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <label className="text-[11px] font-black text-white uppercase tracking-widest">Name</label>
+                                            <label htmlFor="contact-name" className="text-[11px] font-black text-white uppercase tracking-widest required-indicator">Name</label>
                                             <input
+                                                id="contact-name"
                                                 required
                                                 type="text"
-                                                className="w-full bg-white/[0.02] border border-white/10 p-5 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-mono placeholder:text-white/20"
+                                                className="w-full bg-white/[0.02] border border-white/10 p-5 text-sm text-white focus:border-primary/50 transition-all font-mono placeholder:text-white/30"
                                                 placeholder="Your Name"
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             />
                                         </div>
                                         <div className="space-y-3">
-                                            <label className="text-[11px] font-black text-white uppercase tracking-widest">Email Address</label>
+                                            <label htmlFor="contact-email" className="text-[11px] font-black text-white uppercase tracking-widest required-indicator">Email Address</label>
                                             <input
+                                                id="contact-email"
                                                 required
                                                 type="email"
-                                                className="w-full bg-white/[0.02] border border-white/10 p-5 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-mono placeholder:text-white/20"
+                                                className="w-full bg-white/[0.02] border border-white/10 p-5 text-sm text-white focus:border-primary/50 transition-all font-mono placeholder:text-white/30"
                                                 placeholder="your@email.com"
                                                 value={formData.email}
                                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -139,10 +143,11 @@ export default function ContactPage() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <label className="text-[11px] font-black text-white uppercase tracking-widest">Subject</label>
+                                        <label htmlFor="contact-subject" className="text-[11px] font-black text-white uppercase tracking-widest">Subject</label>
                                         <div className="relative">
                                             <select
-                                                className="w-full bg-black border border-white/10 p-5 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-mono appearance-none font-black"
+                                                id="contact-subject"
+                                                className="w-full bg-black border border-white/10 p-5 text-sm text-white focus:border-primary/50 transition-all font-mono appearance-none font-black"
                                                 value={formData.subject}
                                                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                                             >
@@ -151,18 +156,19 @@ export default function ContactPage() {
                                                 <option>Partnership Inquiry</option>
                                                 <option>Bug Report</option>
                                             </select>
-                                            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-primary">
+                                            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-primary" aria-hidden="true">
                                                 <TerminalIcon className="w-4 h-4" />
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="space-y-3">
-                                        <label className="text-[11px] font-black text-white uppercase tracking-widest">Message</label>
+                                        <label htmlFor="contact-message" className="text-[11px] font-black text-white uppercase tracking-widest required-indicator">Message</label>
                                         <textarea
+                                            id="contact-message"
                                             required
                                             rows={6}
-                                            className="w-full bg-white/[0.02] border border-white/10 p-5 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-mono resize-none placeholder:text-white/20"
+                                            className="w-full bg-white/[0.02] border border-white/10 p-5 text-sm text-white focus:border-primary/50 transition-all font-mono resize-none placeholder:text-white/30"
                                             placeholder="Tell us what&apos;s on your mind..."
                                             value={formData.message}
                                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -172,7 +178,7 @@ export default function ContactPage() {
                                     <button
                                         type="submit"
                                         disabled={status === "loading"}
-                                        className="w-full py-6 border border-primary text-primary font-black uppercase tracking-[0.4em] text-xs flex items-center justify-center gap-4 hover:bg-primary hover:text-black transition-all group disabled:opacity-50"
+                                        className="w-full py-6 border border-primary text-primary font-black uppercase tracking-[0.4em] text-xs flex items-center justify-center gap-4 hover:bg-primary hover:text-black transition-all group disabled:opacity-50 min-h-[48px]"
                                     >
                                         {status === "loading" ? (
                                             <>
@@ -188,9 +194,12 @@ export default function ContactPage() {
                                     </button>
 
                                     {status === "error" && (
-                                        <p className="text-[11px] text-red-500 uppercase tracking-widest text-center font-black">
-                                            Error: Something went wrong. Please try again.
-                                        </p>
+                                        <div className="p-4 bg-red-500/10 border border-red-500/20 flex items-center gap-3" role="alert">
+                                            <AlertCircle className="w-5 h-5 text-red-500 shrink-0" aria-hidden="true" />
+                                            <p className="text-sm text-red-400">
+                                                Something went wrong. Please check your connection and try again.
+                                            </p>
+                                        </div>
                                     )}
                                 </motion.form>
                             )}

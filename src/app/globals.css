@@ -41,8 +41,8 @@
 
 * {
   border-color: hsl(var(--border));
-  /* Fast, functional transitions */
-  transition-duration: 150ms;
+  /* Smooth, functional transitions */
+  transition-duration: 200ms;
 }
 
 body {
@@ -50,6 +50,53 @@ body {
   color: hsl(var(--foreground));
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ── Accessibility: Focus-Visible Ring ── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* ── Selection Color ── */
+::selection {
+  background: hsl(var(--primary) / 0.3);
+  color: white;
+}
+
+/* ── Skip-to-Content (keyboard users) ── */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  padding: 12px 24px;
+  background: hsl(var(--primary));
+  color: black;
+  font-weight: 900;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: none;
+  transition: top 200ms ease;
+}
+
+.skip-to-content:focus {
+  top: 16px;
+}
+
+/* ── Required Field Indicator ── */
+.required-indicator::after {
+  content: " *";
+  color: hsl(var(--primary));
+  font-weight: 900;
 }
 
 /* Functional Terminal Utilities */

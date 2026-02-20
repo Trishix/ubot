@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Github, Link as LinkIcon, Loader2, CheckCircle2, Terminal, ExternalLink, Check, Copy } from "lucide-react";
+import { Github, Link as LinkIcon, Loader2, CheckCircle2, Terminal, ExternalLink, Check, Copy, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { AnimatePresence, motion } from "framer-motion";
@@ -171,8 +171,9 @@ export default function Dashboard() {
 
     if (fetchingProfile) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
+            <div className="min-h-screen bg-black flex items-center justify-center" role="status" aria-label="Loading dashboard">
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <span className="sr-only">Loading dashboard...</span>
             </div>
         );
     }
@@ -186,6 +187,8 @@ export default function Dashboard() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-8 font-mono"
+                        role="status"
+                        aria-label="Building your chatbot"
                     >
                         <div className="relative">
                             <div className="w-24 h-24 border border-primary/20 rounded-full animate-[spin_3s_linear_infinite]" />
@@ -194,11 +197,11 @@ export default function Dashboard() {
                             </div>
                         </div>
                         <div className="space-y-2 text-center">
-                            <h2 className="text-primary text-[10px] uppercase font-black tracking-[0.5em] animate-pulse">Initializing Your Bot</h2>
+                            <h2 className="text-primary text-xs uppercase font-black tracking-[0.5em] animate-pulse">Initializing Your Bot</h2>
                             <div className="flex items-center gap-2 justify-center">
-                                <span className="text-[9px] text-white uppercase tracking-[0.3em] font-bold">Syncing Source</span>
-                                <div className="w-4 h-[1px] bg-primary" />
-                                <span className="text-[9px] text-white uppercase tracking-[0.3em] font-black">Building Persona</span>
+                                <span className="text-[10px] text-white uppercase tracking-[0.3em] font-bold">Syncing Source</span>
+                                <div className="w-4 h-[1px] bg-primary" aria-hidden="true" />
+                                <span className="text-[10px] text-white uppercase tracking-[0.3em] font-black">Building Persona</span>
                             </div>
                         </div>
                     </motion.div>
@@ -210,7 +213,7 @@ export default function Dashboard() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/10 pb-12">
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                            <Terminal className="w-4 h-4 text-primary" />
+                            <Terminal className="w-4 h-4 text-primary" aria-hidden="true" />
                             <span className="text-[11px] font-black text-primary uppercase tracking-[0.2em]">Dashboard</span>
                         </div>
                         <h1 className="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase italic">
@@ -224,7 +227,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={handleLogout}
-                            className="px-6 py-3 border border-white/10 text-white hover:text-primary hover:border-primary/50 transition-all text-[11px] uppercase tracking-widest font-black"
+                            className="px-6 py-3 border border-white/10 text-white hover:text-primary hover:border-primary/50 transition-all text-[11px] uppercase tracking-widest font-black min-h-[44px]"
                         >
                             [ Sign Out ]
                         </button>
@@ -239,9 +242,9 @@ export default function Dashboard() {
                         className="space-y-12"
                     >
                         {/* Status Card */}
-                        <div className="relative group">
+                        <section className="relative group" aria-label="Bot status">
                             <div className="absolute -top-3 left-6 px-3 py-1 bg-black border border-primary/50 text-[10px] font-black text-primary uppercase tracking-[0.4em] z-10 flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
                                 Active System // ONLINE
                             </div>
                             <div
@@ -251,10 +254,10 @@ export default function Dashboard() {
                                 <div className="text-center space-y-4">
                                     <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter">@{profile.username}</h3>
                                     <div className="flex items-center gap-4 justify-center">
-                                        <span className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-[0.2em]">
+                                        <span className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em]">
                                             {profile.portfolio_data.role || "Developer"}
                                         </span>
-                                        <span className="px-3 py-1 bg-white/5 border border-white/10 text-white/50 text-[9px] font-black uppercase tracking-[0.2em]">
+                                        <span className="px-3 py-1 bg-white/5 border border-white/10 text-white/50 text-[10px] font-black uppercase tracking-[0.2em]">
                                             v1.0.0
                                         </span>
                                     </div>
@@ -264,58 +267,63 @@ export default function Dashboard() {
                                     <a
                                         href={generatedLink}
                                         target="_blank"
-                                        className="px-8 py-4 border border-primary text-primary hover:bg-primary hover:text-black transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-2"
+                                        rel="noopener noreferrer"
+                                        className="px-8 py-4 border border-primary text-primary hover:bg-primary hover:text-black transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-2 min-h-[48px]"
                                     >
-                                        <ExternalLink className="w-4 h-4" />
+                                        <ExternalLink className="w-4 h-4" aria-hidden="true" />
                                         Launch Bot
                                     </a>
                                     <button
                                         onClick={() => setIsEditing(true)}
-                                        className="px-8 py-4 border border-white/10 text-white hover:border-primary/50 hover:text-primary transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-2"
+                                        className="px-8 py-4 border border-white/10 text-white hover:border-primary/50 hover:text-primary transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-2 min-h-[48px]"
                                     >
-                                        <Terminal className="w-4 h-4" />
+                                        <Terminal className="w-4 h-4" aria-hidden="true" />
                                         Edit Config
                                     </button>
                                     <button
                                         onClick={handleDelete}
-                                        className="px-8 py-4 border border-white/10 text-white hover:border-red-500/50 hover:text-red-500 transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-2"
+                                        className="px-8 py-4 border border-white/10 text-white hover:border-red-500/50 hover:text-red-500 transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-2 min-h-[48px]"
                                     >
                                         [ Delete Bot ]
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </section>
 
                         {/* Integration Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <section className="grid grid-cols-1 md:grid-cols-2 gap-8" aria-label="Bot details">
                             <div className="p-8 border border-white/5 bg-white/[0.01] space-y-4">
                                 <div className="flex items-center gap-2 text-primary opacity-50">
-                                    <LinkIcon className="w-3 h-3" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Share Link</span>
+                                    <LinkIcon className="w-3 h-3" aria-hidden="true" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Share Link</span>
                                 </div>
                                 <div className="flex items-center justify-between pb-2 border-b border-white/5">
                                     <span className="text-white text-xs truncate max-w-[200px]">{generatedLink}</span>
-                                    <button onClick={handleCopyLink} className="text-primary hover:scale-110 transition-transform">
+                                    <button
+                                        onClick={handleCopyLink}
+                                        className="text-primary hover:scale-110 transition-transform min-w-[44px] min-h-[44px] flex items-center justify-center"
+                                        aria-label={copiedLink ? "Link copied" : "Copy share link"}
+                                    >
                                         {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                                     </button>
                                 </div>
                             </div>
                             <div className="p-8 border border-white/5 bg-white/[0.01] space-y-4">
                                 <div className="flex items-center gap-2 text-primary opacity-50">
-                                    <Github className="w-3 h-3" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Connected Source</span>
+                                    <Github className="w-3 h-3" aria-hidden="true" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Connected Source</span>
                                 </div>
                                 <div className="flex items-center justify-between pb-2 border-b border-white/5">
                                     <span className="text-white text-xs truncate max-w-[200px]">{profile.portfolio_data.github}</span>
-                                    <ExternalLink className="w-4 h-4 text-white/20" />
+                                    <ExternalLink className="w-4 h-4 text-white/20" aria-hidden="true" />
                                 </div>
                             </div>
 
                             {/* API Endpoint Section */}
                             <div className="md:col-span-2 p-8 border border-white/5 bg-white/[0.01] space-y-4">
                                 <div className="flex items-center gap-2 text-primary opacity-50">
-                                    <Terminal className="w-3 h-3" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">Headless API Endpoint</span>
+                                    <Terminal className="w-3 h-3" aria-hidden="true" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Headless API Endpoint</span>
                                 </div>
                                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                     <code className="text-white/70 text-[10px] md:text-xs font-mono bg-black/50 p-3 rounded border border-white/10 w-full md:w-auto flex-1 break-all">
@@ -326,16 +334,17 @@ export default function Dashboard() {
                                             navigator.clipboard.writeText(`${window.location.origin}/api/chat/${profile.username}`);
                                             alert("API Endpoint copied!");
                                         }}
-                                        className="text-primary text-[10px] uppercase font-black hover:underline whitespace-nowrap"
+                                        className="text-primary text-xs uppercase font-black hover:underline whitespace-nowrap min-h-[44px] px-2"
+                                        aria-label="Copy API endpoint URL"
                                     >
                                         [ Copy Endpoint ]
                                     </button>
                                 </div>
-                                <p className="text-[10px] text-white/40 uppercase tracking-wider">
+                                <p className="text-xs text-white/40 uppercase tracking-wider">
                                     Integrate your bot into any frontend. Send POST requests with <code>{`{ messages: [] }`}</code> body.
                                 </p>
                             </div>
-                        </div>
+                        </section>
                     </motion.div>
                 ) : (
                     <motion.div
@@ -346,44 +355,45 @@ export default function Dashboard() {
                         {isEditing && (
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="text-primary text-[10px] font-black uppercase tracking-widest mb-4 hover:underline"
+                                className="text-primary text-xs font-black uppercase tracking-widest mb-4 hover:underline min-h-[44px] px-2"
                             >
                                 &lt;- Cancel Editing
                             </button>
                         )}
 
-                        <form onSubmit={handleGenerate} className="space-y-12">
+                        <form onSubmit={handleGenerate} className="space-y-12" aria-label="Chatbot configuration form">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                 <div className="space-y-4">
-                                    <label className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Your Link Handle</label>
+                                    <label htmlFor="dash-username" className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono required-indicator">Your Link Handle</label>
                                     <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/80 font-mono text-[11px] uppercase font-black pointer-events-none select-none">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/80 font-mono text-[11px] uppercase font-black pointer-events-none select-none" aria-hidden="true">
                                             <span className="hidden md:inline">ubot-chat.vercel.app/at/</span>
                                             <span className="md:hidden">.../at/</span>
                                         </span>
                                         <input
+                                            id="dash-username"
                                             type="text"
                                             required
                                             placeholder="your-name"
-                                            className={`w-full bg-white/[0.02] border py-5 pl-[80px] md:pl-[220px] pr-4 focus:outline-none transition-all text-white font-mono text-sm ${isUsernameAvailable === true ? 'border-primary/50' :
+                                            className={`w-full bg-white/[0.02] border py-5 pl-[80px] md:pl-[220px] pr-4 transition-all text-white font-mono text-sm ${isUsernameAvailable === true ? 'border-primary/50' :
                                                 isUsernameAvailable === false ? 'border-red-500/50' :
                                                     'border-white/10'
                                                 }`}
                                             value={username}
                                             onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
                                         />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2" aria-live="polite">
                                             {isCheckingUsername ? (
                                                 <Loader2 className="w-3 h-3 text-primary animate-spin" />
                                             ) : isUsernameAvailable === true ? (
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-[8px] font-black text-primary uppercase tracking-widest">Available</span>
-                                                    <CheckCircle2 className="w-3 h-3 text-primary" />
+                                                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">Available</span>
+                                                    <CheckCircle2 className="w-3 h-3 text-primary" aria-hidden="true" />
                                                 </div>
                                             ) : isUsernameAvailable === false ? (
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-[8px] font-black text-red-500 uppercase tracking-widest">Taken</span>
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                                    <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Taken</span>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" aria-hidden="true" />
                                                 </div>
                                             ) : null}
                                         </div>
@@ -391,13 +401,14 @@ export default function Dashboard() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-[11px] font-black text-white uppercase tracking-[0.2em]">GitHub Profile URL</label>
+                                    <label htmlFor="dash-github" className="text-[11px] font-black text-white uppercase tracking-[0.2em]">GitHub Profile URL</label>
                                     <div className="relative">
-                                        <Github className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                                        <Github className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" aria-hidden="true" />
                                         <input
-                                            type="text"
+                                            id="dash-github"
+                                            type="url"
                                             placeholder="https://github.com/..."
-                                            className="w-full bg-white/[0.02] border border-white/10 py-5 pl-14 pr-4 focus:outline-none focus:border-primary/50 transition-all text-white text-sm"
+                                            className="w-full bg-white/[0.02] border border-white/10 py-5 pl-14 pr-4 focus:border-primary/50 transition-all text-white text-sm"
                                             value={githubUrl}
                                             onChange={(e) => setGithubUrl(e.target.value)}
                                         />
@@ -406,54 +417,56 @@ export default function Dashboard() {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Resume (PDF)</label>
+                                <label htmlFor="dash-resume" className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Resume (PDF)</label>
                                 <div className="relative">
                                     <input
+                                        id="dash-resume"
                                         type="file"
                                         accept="application/pdf"
-                                        className="w-full bg-white/[0.02] border border-white/10 py-4 px-4 focus:outline-none focus:border-primary/50 transition-all text-white font-mono text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-[10px] file:font-black file:bg-primary file:text-black hover:file:bg-primary/90"
+                                        className="w-full bg-white/[0.02] border border-white/10 py-4 px-4 focus:border-primary/50 transition-all text-white font-mono text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-[10px] file:font-black file:bg-primary file:text-black hover:file:bg-primary/90"
                                         onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
                                     />
                                     {profile?.portfolio_data?.resume_text && !resumeFile ? (
                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                            <span className="text-[9px] text-green-500 font-black uppercase tracking-widest">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" aria-hidden="true" />
+                                            <span className="text-[10px] text-green-500 font-black uppercase tracking-widest">
                                                 Resume Data Saved
                                             </span>
                                         </div>
                                     ) : null}
                                 </div>
                                 {profile?.portfolio_data?.resume_text ? (
-                                    <p className="text-[10px] text-white/40 uppercase tracking-widest">
+                                    <p className="text-xs text-white/40 uppercase tracking-widest">
                                         * A resume is already saved. Uploading a new one will replace it.
                                     </p>
                                 ) : null}
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Extra Details (Optional)</label>
+                                <label htmlFor="dash-extra" className="text-[11px] font-black text-white uppercase tracking-[0.2em] font-mono">Extra Details (Optional)</label>
                                 <textarea
+                                    id="dash-extra"
                                     placeholder="Add specific instructions, recent achievements, or bio overrides here..."
-                                    className="w-full bg-white/[0.02] border border-white/10 py-4 px-4 focus:outline-none focus:border-primary/50 transition-all text-white font-mono text-sm min-h-[100px]"
+                                    className="w-full bg-white/[0.02] border border-white/10 py-4 px-4 focus:border-primary/50 transition-all text-white font-mono text-sm min-h-[100px]"
                                     value={extraDetails}
                                     onChange={(e) => setExtraDetails(e.target.value)}
                                 />
-                                <p className="text-[10px] text-white/40 uppercase tracking-widest">
+                                <p className="text-xs text-white/40 uppercase tracking-widest">
                                     * Provide at least one source to train your bot.
                                 </p>
                             </div>
 
                             {error && (
-                                <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                                    Error: {error}
+                                <div className="p-4 bg-red-500/10 border border-red-500/20 flex items-center gap-3" role="alert" aria-live="assertive">
+                                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0" aria-hidden="true" />
+                                    <p className="text-sm text-red-400">{error}</p>
                                 </div>
                             )}
 
                             <button
                                 type="submit"
                                 disabled={loading || (!githubUrl && !resumeFile && !extraDetails) || !username || isUsernameAvailable === false || isCheckingUsername}
-                                className="w-full py-6 border border-primary text-primary font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:bg-primary hover:text-black transition-all disabled:opacity-20"
+                                className="w-full py-6 border border-primary text-primary font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:bg-primary hover:text-black transition-all disabled:opacity-20 min-h-[48px]"
                             >
                                 {loading ? (
                                     <>
@@ -462,7 +475,7 @@ export default function Dashboard() {
                                     </>
                                 ) : (
                                     <>
-                                        <CheckCircle2 className="w-5 h-5" />
+                                        <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
                                         {isEditing ? "Update Chatbot" : "Generate Chatbot"}
                                     </>
                                 )}
@@ -473,16 +486,16 @@ export default function Dashboard() {
             </div>
 
             {/* Global Status Bar */}
-            <footer className="fixed bottom-0 left-0 right-0 h-10 border-t border-white/5 bg-black flex items-center justify-between px-8 z-50">
+            <footer className="fixed bottom-0 left-0 right-0 h-10 border-t border-white/5 bg-black flex items-center justify-between px-8 z-50" role="contentinfo">
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[9px] text-white uppercase tracking-widest">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+                        <span className="text-[10px] text-white uppercase tracking-widest">
                             USR: {user?.email}
                         </span>
                     </div>
                 </div>
-                <div className="text-[9px] text-white/50 uppercase tracking-widest">
+                <div className="text-[10px] text-white/50 uppercase tracking-widest">
                     UBOT ARCHITECTURE v2.5
                 </div>
             </footer>

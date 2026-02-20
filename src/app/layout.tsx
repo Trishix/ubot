@@ -105,8 +105,13 @@ export default function RootLayout({
             })
           }}
         />
+        <a href="#main-content" className="skip-to-content">
+          Skip to content
+        </a>
         <Navbar />
-        {children}
+        <div id="main-content">
+          {children}
+        </div>
       </body>
     </html>
   );
