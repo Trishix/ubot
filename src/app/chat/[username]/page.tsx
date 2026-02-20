@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useParams } from "next/navigation";
 import { Terminal, Send, Github, Activity, User, Bot as BotIcon, HardDrive, Copy, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { AnimatePresence, motion } from "framer-motion";
+import React from "react";
 
 interface Profile {
     name?: string;
@@ -93,6 +94,84 @@ export default function PublicBot() {
             if (text) return text;
         }
         return "";
+    };
+
+    // Lightweight markdown → JSX renderer
+    const renderMarkdown = (text: string) => {
+        if (!text) return null;
+
+        // Split into lines, preserving blank lines for paragraph breaks
+        const lines = text.split('\n');
+
+        return lines.map((line, lineIdx) => {
+            // Parse inline markdown tokens
+            const parseInline = (str: string): React.ReactNode[] => {
+                const nodes: React.ReactNode[] = [];
+                // Regex: bold (**text**), italic (*text*), inline code (`text`), links [text](url)
+                const regex = /(\*\*(.+?)\*\*)|(`(.+?)`)|(\*(.+?)\*)|(\[(.+?)\]\((.+?)\))/g;
+                let lastIndex = 0;
+                let match;
+
+                while ((match = regex.exec(str)) !== null) {
+                    // Push text before this match
+                    if (match.index > lastIndex) {
+                        nodes.push(str.slice(lastIndex, match.index));
+                    }
+
+                    if (match[1]) {
+                        // Bold: **text**
+                        nodes.push(<strong key={`b-${lineIdx}-${match.index}`} className="font-black">{match[2]}</strong>);
+                    } else if (match[3]) {
+                        // Inline code: `text`
+                        nodes.push(<code key={`c-${lineIdx}-${match.index}`} className="px-1.5 py-0.5 bg-white/10 border border-white/10 text-primary text-xs">{match[4]}</code>);
+                    } else if (match[5]) {
+                        // Italic: *text*
+                        nodes.push(<em key={`i-${lineIdx}-${match.index}`} className="italic text-white/90">{match[6]}</em>);
+                    } else if (match[7]) {
+                        // Link: [text](url)
+                        nodes.push(
+                            <a key={`a-${lineIdx}-${match.index}`} href={match[9]} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-white transition-colors">
+                                {match[8]}
+                            </a>
+                        );
+                    }
+
+                    lastIndex = match.index + match[0].length;
+                }
+
+                // Push remaining text
+                if (lastIndex < str.length) {
+                    nodes.push(str.slice(lastIndex));
+                }
+
+                return nodes.length > 0 ? nodes : [str];
+            };
+
+            // Handle bullet points (- item or * item)
+            const bulletMatch = line.match(/^\s*[-*]\s+(.+)/);
+            if (bulletMatch) {
+                return (
+                    <div key={lineIdx} className="flex gap-2 items-start pl-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        <span>{parseInline(bulletMatch[1])}</span>
+                    </div>
+                );
+            }
+
+            // Handle heading-like lines (### text)
+            const headingMatch = line.match(/^#{1,3}\s+(.+)/);
+            if (headingMatch) {
+                return <div key={lineIdx} className="font-black text-white mt-2 mb-1">{parseInline(headingMatch[1])}</div>;
+            }
+
+            // Empty line = spacer
+            if (line.trim() === '') {
+                return <div key={lineIdx} className="h-2" />;
+            }
+
+            // Regular line
+            return <div key={lineIdx}>{parseInline(line)}</div>;
+        });
     };
 
     const handleCustomSubmit = async (e: React.FormEvent) => {
@@ -232,7 +311,7 @@ export default function PublicBot() {
                                             <div className="absolute inset-0 opacity-[0.02] pointer-events-none" aria-hidden="true"
                                                 style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "10px 10px" }} />
 
-                                            {getMessageText(msg)}
+                                            {msg.role === 'assistant' ? renderMarkdown(getMessageText(msg)) : getMessageText(msg)}
 
                                             {msg.role === 'assistant' && !getMessageText(msg) && isLoading && (
                                                 <div className="flex gap-1 py-1" role="status" aria-label="AI is typing">
